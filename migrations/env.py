@@ -6,8 +6,7 @@ from alembic import context
 sys.path.append("src")
 
 from src.infrastructure.dbs.postgre import Base
-from src.domain.models.user import User
-from src.config import settings
+from src.app.config.config import settings
 
 config = context.config
 fileConfig(config.config_file_name)
