@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, Enum
+
+from src.domain.base_model import TimestampMixin
 from src.infrastructure.dbs.postgre import Base
 from src.domain.enums import UserRoles
 
-class User(Base):
+class User(Base, TimestampMixin):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
