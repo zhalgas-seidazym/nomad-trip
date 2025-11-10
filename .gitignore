@@ -45,7 +45,7 @@ build/
 
 # ---- Alembic ----
 app/infrastructure/migrations/versions/*.pyc
-app/infrastructure/migrations/__pycache__/
+src/infrastructure/migrations/__pycache__/
 
 # ---- Docker ----
 *.pid

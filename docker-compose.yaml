@@ -5,7 +5,7 @@ services:
     build: .
     container_name: nomad_trip_api
     volumes:
-      - .:/app
+      - .:/src
     ports:
       - "8000:8000"
     env_file:
