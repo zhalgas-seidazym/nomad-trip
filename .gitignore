@@ -44,8 +44,8 @@ build/
 .eggs/
 
 # ---- Alembic ----
-app/infrastructure/migrations/versions/*.pyc
-src/infrastructure/migrations/__pycache__/
+migrations/versions/*.pyc
+migrations/__pycache__/
 
 # ---- Docker ----
 *.pid
