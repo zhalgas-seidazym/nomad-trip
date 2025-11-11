@@ -6,10 +6,12 @@ from alembic import context
 sys.path.append("src")
 
 from src.infrastructure.dbs.postgre import Base
-from src.app.main import container
+from src.app.config.config import Settings
 from src.application.models.user import User
 
-db_url = container.settings.db_url
+settings = Settings()
+
+db_url = settings.db_url
 
 config = context.config
 fileConfig(config.config_file_name)

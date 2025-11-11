@@ -2,14 +2,15 @@ from dependency_injector import containers, providers
 
 from src.app.config.config import Settings
 from src.infrastructure.dbs.postgre import create_engine, create_session_factory
+from src.infrastructure.dbs.redis import RedisConnection
 
 
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         modules=[
-            "src.presentation.depends.session",
-            "src.presentation.depends.security",
-            "src.presentation.depends.controllers",
+            "src.presentation.v1.depends.session",
+            "src.presentation.v1.depends.security",
+            "src.presentation.v1.depends.controllers",
         ]
     )
 
@@ -20,4 +21,6 @@ class Container(containers.DeclarativeContainer):
     session_factory = providers.Resource(
         create_session_factory, engine=engine
     )
+
+    redis = providers.Resource(RedisConnection, db_url=settings.REDIS_URL)
 
