@@ -2,6 +2,8 @@ import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+from fastapi import HTTPException
+
 
 class AsyncEmailService:
     def __init__(self, smtp_host: str, smtp_port: int, username: str, password: str, from_email: str):
@@ -30,6 +32,6 @@ class AsyncEmailService:
                 username=self.username,
                 password=self.password,
             )
-        except Exception as e:
-            print(f"❌ Ошибка при отправке письма: {e}")
-            raise
+        except aiosmtplib.SMTPException as e:
+            raise HTTPException(status_code=500, detail=f"Email sending error: {e}")
+

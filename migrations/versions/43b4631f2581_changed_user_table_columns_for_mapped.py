@@ -1,4 +1,4 @@
-"""changed user table columns for mapped
+"""changed users table columns for mapped
 
 Revision ID: 43b4631f2581
 Revises: 156d8e926a5f

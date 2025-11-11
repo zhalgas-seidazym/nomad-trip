@@ -7,7 +7,7 @@ sys.path.append("src")
 
 from src.infrastructure.dbs.postgre import Base
 from src.app.config.config import Settings
-from src.application.models.user import User
+from src.application.users.models import User
 
 settings = Settings()
 

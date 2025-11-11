@@ -1,4 +1,4 @@
-"""add timestamps for user table
+"""add timestamps for users table
 
 Revision ID: 156d8e926a5f
 Revises: c526261b871c

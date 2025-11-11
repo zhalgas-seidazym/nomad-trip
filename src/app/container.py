@@ -3,7 +3,8 @@ from dependency_injector import containers, providers
 from src.app.config.config import Settings
 from src.infrastructure.dbs.postgre import create_engine, create_session_factory
 from src.infrastructure.dbs.redis import RedisConnection
-from src.infrastructure.services.smtp_service import AsyncEmailService
+from src.infrastructure.integrations.jwt_service import JWTService
+from src.infrastructure.integrations.email_service import AsyncEmailService
 
 
 class Container(containers.DeclarativeContainer):
@@ -32,5 +33,12 @@ class Container(containers.DeclarativeContainer):
         username=settings.SMTP_USER,
         password=settings.SMTP_PASSWORD,
         from_email=settings.SMTP_FROM,
+    )
+
+    jwt_service = providers.Factory(
+        JWTService,
+        jwt_secret=settings.JWT_SECRET,
+        jwt_algorithm=settings.JWT_ALGORITHM,
+        access_token_expire_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
     )
 
