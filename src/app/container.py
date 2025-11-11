@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from src.app.config.config import Settings
 from src.infrastructure.dbs.postgre import create_engine, create_session_factory
 from src.infrastructure.dbs.redis import RedisConnection
+from src.infrastructure.services.smtp_service import AsyncEmailService
 
 
 class Container(containers.DeclarativeContainer):
@@ -23,4 +24,13 @@ class Container(containers.DeclarativeContainer):
     )
 
     redis = providers.Resource(RedisConnection, db_url=settings.REDIS_URL)
+
+    email_service = providers.Factory(
+        AsyncEmailService,
+        smtp_host=settings.SMTP_HOST,
+        smtp_port=settings.SMTP_PORT,
+        username=settings.SMTP_USER,
+        password=settings.SMTP_PASSWORD,
+        from_email=settings.SMTP_FROM,
+    )
 
