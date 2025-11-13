@@ -40,3 +40,10 @@ class IUserRepository(ABC):
 
     @abstractmethod
     async def delete(self, user_id: int) -> None: ...
+
+class IEmailOtpService(ABC):
+    @abstractmethod
+    async def send_otp(self, email: str) -> None: ...
+
+    @abstractmethod
+    async def validate_otp(self, email: str, code: str) -> bool: ...
