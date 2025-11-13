@@ -16,19 +16,19 @@ class UserRepository(IUserRepository):
         query = select(User).where(User.id == user_id)
         result = await self._session.execute(query)
         orm = result.scalar_one_or_none()
-        return UserDTO.to_domain(orm) if orm else None
+        return UserDTO.to_application(orm) if orm else None
 
     async def get_by_email(self, email: str) -> Optional[UserDTO]:
         query = select(User).where(User.email == email)
         result = await self._session.execute(query)
         orm = result.scalar_one_or_none()
-        return UserDTO.to_domain(orm) if orm else None
+        return UserDTO.to_application(orm) if orm else None
 
     async def add(self, user_data: Dict[str, Any]) -> Optional[UserDTO]:
         query = insert(User).values(**user_data).returning(User)
         result = await self._session.execute(query)
         orm = result.scalar_one_or_none()
-        return UserDTO.to_domain(orm) if orm else None
+        return UserDTO.to_application(orm) if orm else None
 
     async def update(self, user_id: int, user_data: Dict[str, Any]) -> Optional[UserDTO]:
         if not user_data:
@@ -42,7 +42,7 @@ class UserRepository(IUserRepository):
         )
         result = await self._session.execute(query)
         orm = result.scalar_one_or_none()
-        return UserDTO.to_domain(orm) if orm else None
+        return UserDTO.to_application(orm) if orm else None
 
     async def delete(self, user_id: int) -> None:
         query = delete(User).where(User.id == user_id).returning(User.id)

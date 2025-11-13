@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
+
+from fastapi import HTTPException, status
 from jose import jwt, JWTError, ExpiredSignatureError
 
 class JWTService:
@@ -23,6 +25,12 @@ class JWTService:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             return payload
         except ExpiredSignatureError:
-            raise ValueError("Token has expired")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+            )
         except JWTError:
-            raise ValueError("Invalid token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+            )

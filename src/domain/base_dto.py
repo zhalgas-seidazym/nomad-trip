@@ -11,7 +11,7 @@ class BaseDTOMixin:
         return None
 
     @classmethod
-    def to_domain(cls, obj):
+    def to_application(cls, obj):
         return cls._from_orm(obj)
 
     def to_payload(self, exclude_none: bool = True) -> dict:

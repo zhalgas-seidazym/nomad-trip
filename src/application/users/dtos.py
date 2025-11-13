@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 from src.domain.base_dto import BaseDTOMixin
@@ -11,4 +12,5 @@ class UserDTO(BaseDTOMixin):
     last_name: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None
-    password2: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
