@@ -4,3 +4,4 @@ class UserRoles(str, Enum):
     ADMIN = "admin"
     PASSENGER = "passenger"
     DRIVER = "driver"
+    COMPANY = "company"
