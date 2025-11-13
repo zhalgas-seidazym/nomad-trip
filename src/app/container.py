@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
 from src.app.config.config import Settings
+from src.application.users.services import EmailOtpService
 from src.infrastructure.dbs.postgre import create_engine, create_session_factory
 from src.infrastructure.dbs.redis import RedisConnection
 from src.infrastructure.integrations.jwt_service import JWTService
@@ -40,5 +41,12 @@ class Container(containers.DeclarativeContainer):
         jwt_secret=settings.JWT_SECRET,
         jwt_algorithm=settings.JWT_ALGORITHM,
         access_token_expire_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
+
+    email_otp_service = providers.Factory(
+        EmailOtpService,
+        email_service=AsyncEmailService,
+        redis=redis,
+        otp_ttl=settings.OTP_TTL,
     )
 

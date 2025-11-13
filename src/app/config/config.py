@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str
     SMTP_FROM: str
 
+    # ---- OTP ----
+    OTP_TTL: int
+
     @property
     def db_url(self) -> str:
         return self.DATABASE_URL or f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

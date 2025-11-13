@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Protocol
 
 from fastapi import Response
 
@@ -41,9 +41,7 @@ class IUserRepository(ABC):
     @abstractmethod
     async def delete(self, user_id: int) -> None: ...
 
-class IEmailOtpService(ABC):
-    @abstractmethod
+class IEmailOtpService(Protocol):
     async def send_otp(self, email: str) -> None: ...
 
-    @abstractmethod
     async def validate_otp(self, email: str, code: str) -> bool: ...
