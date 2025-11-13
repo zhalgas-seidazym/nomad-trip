@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException
 
 
-class AsyncEmailService:
+class EmailService:
     def __init__(self, smtp_host: str, smtp_port: int, username: str, password: str, from_email: str):
         self.smtp_host = smtp_host
         self.smtp_port = smtp_port

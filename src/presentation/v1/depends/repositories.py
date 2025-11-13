@@ -6,5 +6,5 @@ from src.application.users.repositories import UserRepository
 from src.presentation.v1.depends.session import get_session
 
 
-async def get_user_repo(session: AsyncSession = Depends(get_session)) -> IUserRepository:
+async def get_user_repository(session: AsyncSession = Depends(get_session)) -> IUserRepository:
     return UserRepository(session)

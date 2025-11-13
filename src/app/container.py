@@ -5,7 +5,7 @@ from src.application.users.services import EmailOtpService
 from src.infrastructure.dbs.postgre import create_engine, create_session_factory
 from src.infrastructure.dbs.redis import RedisConnection
 from src.infrastructure.integrations.jwt_service import JWTService
-from src.infrastructure.integrations.email_service import AsyncEmailService
+from src.infrastructure.integrations.email_service import EmailService
 
 
 class Container(containers.DeclarativeContainer):
@@ -28,7 +28,7 @@ class Container(containers.DeclarativeContainer):
     redis = providers.Resource(RedisConnection, db_url=settings.REDIS_URL)
 
     email_service = providers.Factory(
-        AsyncEmailService,
+        EmailService,
         smtp_host=settings.SMTP_HOST,
         smtp_port=settings.SMTP_PORT,
         username=settings.SMTP_USER,
@@ -45,7 +45,7 @@ class Container(containers.DeclarativeContainer):
 
     email_otp_service = providers.Factory(
         EmailOtpService,
-        email_service=AsyncEmailService,
+        email_service=EmailService,
         redis=redis,
         otp_ttl=settings.OTP_TTL,
     )
