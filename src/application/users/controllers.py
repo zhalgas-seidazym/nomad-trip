@@ -76,15 +76,15 @@ class UserController(IUserController):
             "details": "Logged in successfully",
         }
 
-    # async def get_profile(self, user_id: int):
-    #     user = await self.user_repository.get_by_id(user_id)
-    #
-    #     if user is None:
-    #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id} id not found")
-    #
-    #     if user.role == UserRoles.ADMIN:
-    #         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Access denied")
-    #
-    #     user.password = None
-    #
-    #     return user.to_payload(exclude_none=True)
+    async def get_profile(self, user_id: int):
+        user = await self.user_repository.get_by_id(user_id)
+
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id} id not found")
+
+        if user.role == UserRoles.ADMIN:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Access denied")
+
+        user.password = None
+
+        return user.to_payload(exclude_none=True)

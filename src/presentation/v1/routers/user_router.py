@@ -130,17 +130,17 @@ async def profile(
     user.password = None
     return user.to_payload(exclude_none=True)
 
-# @router.get(
-#     '/profile/{user_id}',
-#     status_code=status.HTTP_200_OK,
-#     response_model=UserSchema,
-#     responses={
-#         status.HTTP_403_FORBIDDEN: RESPONSE_403,
-#         status.HTTP_404_NOT_FOUND: RESPONSE_404,
-#     }
-# )
-# async def profile_by_id(
-#         user_id: int,
-#         controller: Annotated[IUserController, Depends(get_user_controller)],
-# ):
-#     return controller.get_profile(user_id=user_id)
+@router.get(
+    '/profile/{user_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=UserSchema,
+    responses={
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def profile_by_id(
+        user_id: int,
+        controller: Annotated[IUserController, Depends(get_user_controller)],
+):
+    return controller.get_profile(user_id=user_id)
