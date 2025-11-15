@@ -116,20 +116,20 @@ async def login(
 ):
     return await controller.login(user_data=UserDTO(**body.dict()), response=response)
 
-# @router.get(
-#     '/profile',
-#     status_code=status.HTTP_200_OK,
-#     response_model=UserSchema,
-#     responses={
-#         status.HTTP_401_UNAUTHORIZED: RESPONSE_401
-#     }
-# )
-# async def profile(
-#         user: UserDTO = Depends(get_current_user)
-# ):
-#     user.password = None
-#     return user.to_payload(exclude_none=True)
-#
+@router.get(
+    '/profile',
+    status_code=status.HTTP_200_OK,
+    response_model=UserSchema,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401
+    }
+)
+async def profile(
+        user: UserDTO = Depends(get_current_user)
+):
+    user.password = None
+    return user.to_payload(exclude_none=True)
+
 # @router.get(
 #     '/profile/{user_id}',
 #     status_code=status.HTTP_200_OK,
