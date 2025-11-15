@@ -160,3 +160,26 @@ async def update_profile(
         user: UserDTO = Depends(get_current_user),
 ):
     return await controller.update(user=user, user_data=UserDTO(**body.dict()))
+
+@router.delete(
+    '',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "User deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "User deleted successfully"
+                    }
+                }
+            }
+        },
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+    }
+)
+async def delete_profile(
+        controller: Annotated[IUserController, Depends(get_user_controller)],
+        user: UserDTO = Depends(get_current_user),
+):
+    return await controller.delete(user_id=user.id)

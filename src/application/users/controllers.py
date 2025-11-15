@@ -112,3 +112,10 @@ class UserController(IUserController):
         new_user = await self.user_repository.update(user.id, user_data.to_payload(exclude_none=True))
 
         return new_user.to_payload(exclude_none=True)
+
+    async def delete(self, user_id: int):
+        await self.user_repository.delete(user_id)
+
+        return {
+            "details": "User deleted successfully",
+        }
