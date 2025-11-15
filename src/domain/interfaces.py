@@ -1,7 +1,7 @@
 from typing import Protocol, Optional
 
 class IJWTService(Protocol):
-    def create_token(
+    def encode_token(
         self,
         data: dict,
         expires_delta: Optional[int] = None,
@@ -9,7 +9,7 @@ class IJWTService(Protocol):
     ) -> str:
         ...
 
-    def verify_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> dict:
         ...
 
 
@@ -22,3 +22,10 @@ class IEmailService(Protocol):
         html: bool = False
     ) -> None:
         ...
+
+class IHashService(Protocol):
+    @staticmethod
+    def hash_password(password: str) -> str: ...
+
+    @staticmethod
+    def verify_password(password: str, hashed_password: str) -> bool: ...
