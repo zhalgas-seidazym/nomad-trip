@@ -4,18 +4,12 @@ from src.app.config.config import Settings
 from src.application.users.services import EmailOtpService
 from src.infrastructure.dbs.postgre import create_engine, create_session_factory
 from src.infrastructure.dbs.redis import RedisConnection
+from src.infrastructure.integrations.hash_service import HashService
 from src.infrastructure.integrations.jwt_service import JWTService
 from src.infrastructure.integrations.email_service import EmailService
 
 
 class Container(containers.DeclarativeContainer):
-    wiring_config = containers.WiringConfiguration(
-        modules=[
-            "src.presentation.v1.depends.session",
-            "src.presentation.v1.depends.security",
-            "src.presentation.v1.depends.controllers",
-        ]
-    )
 
     settings = Settings()
 
@@ -50,3 +44,15 @@ class Container(containers.DeclarativeContainer):
         otp_ttl=settings.OTP_TTL,
     )
 
+    hash_service = providers.Factory(
+        HashService,
+    )
+
+container = Container()
+container.wire(
+    modules=[
+        "src.presentation.v1.depends.session",
+        "src.presentation.v1.depends.security",
+        "src.presentation.v1.depends.controllers",
+    ]
+)

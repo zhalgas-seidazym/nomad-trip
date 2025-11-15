@@ -4,8 +4,10 @@ from fastapi import APIRouter, status, Depends, Response
 
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserController
+from src.domain.responses import RESPONSE_404, RESPONSE_401, RESPONSE_403
 from src.presentation.v1.depends.controllers import get_user_controller
-from src.presentation.v1.schemas.user_schema import SendOTPSchema, VerifyOTPSchema
+from src.presentation.v1.depends.security import get_current_user
+from src.presentation.v1.schemas.user_schema import SendOTPSchema, VerifyOTPSchema, LoginSchema, UserSchema
 
 router = APIRouter(
     prefix="/user",
@@ -42,7 +44,7 @@ async def send_otp(
         body: SendOTPSchema,
         controller: Annotated[IUserController, Depends(get_user_controller)],
 ):
-    return await controller.send_otp(UserDTO(email=body.email))
+    return await controller.send_otp(UserDTO(email=body.dict().get("email")))
 
 @router.post(
     '/verify-otp',
@@ -77,5 +79,68 @@ async def verify_otp(
         controller: Annotated[IUserController, Depends(get_user_controller)],
 ):
     return await controller.verify_otp(
-        user = UserDTO(**body), code=body.code, response=response
+        user_data = UserDTO(**body.dict()), code=body.code, response=response
     )
+
+@router.post(
+    '/login',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Logged in successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Logged in successfully"
+                    }
+                }
+            }
+        },
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Incorrect credentials",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Incorrect credentials"
+                    }
+                }
+            }
+        }
+    }
+)
+async def login(
+    body: LoginSchema,
+    response: Response,
+    controller: Annotated[IUserController, Depends(get_user_controller)],
+):
+    return await controller.login(user_data=UserDTO(**body.dict()), response=response)
+
+# @router.get(
+#     '/profile',
+#     status_code=status.HTTP_200_OK,
+#     response_model=UserSchema,
+#     responses={
+#         status.HTTP_401_UNAUTHORIZED: RESPONSE_401
+#     }
+# )
+# async def profile(
+#         user: UserDTO = Depends(get_current_user)
+# ):
+#     user.password = None
+#     return user.to_payload(exclude_none=True)
+#
+# @router.get(
+#     '/profile/{user_id}',
+#     status_code=status.HTTP_200_OK,
+#     response_model=UserSchema,
+#     responses={
+#         status.HTTP_403_FORBIDDEN: RESPONSE_403,
+#         status.HTTP_404_NOT_FOUND: RESPONSE_404,
+#     }
+# )
+# async def profile_by_id(
+#         user_id: int,
+#         controller: Annotated[IUserController, Depends(get_user_controller)],
+# ):
+#     return controller.get_profile(user_id=user_id)

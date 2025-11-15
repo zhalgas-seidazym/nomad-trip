@@ -10,7 +10,7 @@ class JWTService:
         self.algorithm = algorithm
         self.access_token_expire_minutes = access_token_expire_minutes
 
-    def create_token(self, data: dict, expires_delta: Optional[int] = None, is_access_token: bool = True) -> str:
+    def encode_token(self, data: dict, expires_delta: Optional[int] = None, is_access_token: bool = True) -> str:
         to_encode = data.copy()
         if is_access_token:
             expire = datetime.utcnow() + timedelta(minutes=expires_delta or self.access_token_expire_minutes)
@@ -20,7 +20,7 @@ class JWTService:
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
 
-    def verify_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> dict:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             return payload
