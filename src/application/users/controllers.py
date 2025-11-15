@@ -36,6 +36,8 @@ class UserController(IUserController):
 
         if not user_data.is_company and user_data.last_name is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Last name is required")
+        elif user_data.is_company and user_data.last_name:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Last name is not allowed for company accounts")
 
 
         created = await self.user_repository.add(user_data.to_payload(exclude_none=True))
@@ -92,3 +94,21 @@ class UserController(IUserController):
         user.password = None
 
         return user.to_payload(exclude_none=True)
+
+    async def update(self, user: UserDTO, user_data: UserDTO):
+        if user_data.new_password is not None:
+            check_password = self.hash_service.verify_password(user_data.password, user.password)
+
+            if not check_password:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect password")
+
+            user_data.password = self.hash_service.hash_password(user_data.new_password)
+            user_data.new_password = None
+
+
+        if user.role == UserRoles.COMPANY and user_data.last_name is not None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Last name is not allowed for company accounts")
+
+        new_user = await self.user_repository.update(user.id, user_data.to_payload(exclude_none=True))
+
+        return new_user.to_payload(exclude_none=True)

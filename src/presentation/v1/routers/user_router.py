@@ -7,7 +7,8 @@ from src.application.users.interfaces import IUserController
 from src.domain.responses import RESPONSE_404, RESPONSE_401, RESPONSE_403
 from src.presentation.v1.depends.controllers import get_user_controller
 from src.presentation.v1.depends.security import get_current_user
-from src.presentation.v1.schemas.user_schema import SendOTPSchema, VerifyOTPSchema, LoginSchema, UserSchema
+from src.presentation.v1.schemas.user_schema import SendOTPSchema, VerifyOTPSchema, LoginSchema, UserSchema, \
+    UpdateUserSchema
 
 router = APIRouter(
     prefix="/user",
@@ -145,16 +146,17 @@ async def profile_by_id(
 ):
     return controller.get_profile(user_id=user_id)
 
-# @router.put(
-#     '/profile',
-#     status_code=status.HTTP_200_OK,
-#     response_model=UserSchema,
-#     responses={
-#         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-#     }
-# )
-# async def update_profile(
-#         body: UserSchema
-#         controller: Annotated[IUserController, Depends(get_user_controller)],
-#         user: UserDTO = Depends(get_current_user),
-# )
+@router.put(
+    '/profile',
+    status_code=status.HTTP_200_OK,
+    response_model=UserSchema,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+    }
+)
+async def update_profile(
+        body: UpdateUserSchema,
+        controller: Annotated[IUserController, Depends(get_user_controller)],
+        user: UserDTO = Depends(get_current_user),
+):
+    return await controller.update(user=user, user_data=UserDTO(**body.dict()))

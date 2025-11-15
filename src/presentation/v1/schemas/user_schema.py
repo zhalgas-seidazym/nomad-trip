@@ -1,7 +1,6 @@
 from typing import Optional
 
-from fastapi import HTTPException, status
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr
 
 from src.domain.enums import UserRoles
 
@@ -12,18 +11,10 @@ class SendOTPSchema(BaseModel):
 class VerifyOTPSchema(BaseModel):
     email: EmailStr
     password: str
-    password2: str
     first_name: str
     last_name: Optional[str] = None
     is_company: Optional[bool] = False
     code: str
-
-    @field_validator("password2")
-    def passwords_match(cls, v, values):
-        password = values.get("password")
-        if password != v:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match")
-        return v
 
 class LoginSchema(BaseModel):
     email: EmailStr
@@ -39,7 +30,8 @@ class UserSchema(BaseModel):
     class Config:
         use_enum_values = True
 
-# class UpdateUserSchema(BaseModel):
-#     email: Optional[EmailStr] = None
-#     first_name: Optional[str] = None
-#     last_name: Optional[str] = None
+class UpdateUserSchema(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    password: Optional[str] = None
+    new_password: Optional[str] = None
