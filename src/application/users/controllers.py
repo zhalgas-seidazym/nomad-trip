@@ -34,6 +34,10 @@ class UserController(IUserController):
 
         user_data.password = self.hash_service.hash_password(user_data.password)
 
+        if not user_data.is_company and user_data.last_name is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Last name is required")
+
+
         created = await self.user_repository.add(user_data.to_payload(exclude_none=True))
 
         payload = {

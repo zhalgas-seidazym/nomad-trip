@@ -124,7 +124,7 @@ async def login(
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401
     }
 )
-async def profile(
+async def my_profile(
         user: UserDTO = Depends(get_current_user)
 ):
     user.password = None
@@ -144,3 +144,17 @@ async def profile_by_id(
         controller: Annotated[IUserController, Depends(get_user_controller)],
 ):
     return controller.get_profile(user_id=user_id)
+
+# @router.put(
+#     '/profile',
+#     status_code=status.HTTP_200_OK,
+#     response_model=UserSchema,
+#     responses={
+#         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+#     }
+# )
+# async def update_profile(
+#         body: UserSchema
+#         controller: Annotated[IUserController, Depends(get_user_controller)],
+#         user: UserDTO = Depends(get_current_user),
+# )
