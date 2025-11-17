@@ -4,11 +4,11 @@ from fastapi import APIRouter, status, Depends, Response
 
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserController
-from src.domain.responses import RESPONSE_404, RESPONSE_401, RESPONSE_403
+from src.domain.responses import RESPONSE_404, RESPONSE_401, RESPONSE_403, RESPONSE_400
 from src.presentation.v1.depends.controllers import get_user_controller
 from src.presentation.v1.depends.security import get_current_user
 from src.presentation.v1.schemas.user_schema import SendOTPSchema, VerifyOTPSchema, LoginSchema, UserSchema, \
-    UpdateUserSchema
+    UpdateUserSchema, RefreshTokenSchema
 
 router = APIRouter(
     prefix="/user",
@@ -144,7 +144,7 @@ async def profile_by_id(
         user_id: int,
         controller: Annotated[IUserController, Depends(get_user_controller)],
 ):
-    return controller.get_profile(user_id=user_id)
+    return await controller.get_profile(user_id=user_id)
 
 @router.put(
     '/profile',
@@ -184,6 +184,34 @@ async def delete_profile(
 ):
     return await controller.delete(user_id=user.id)
 
-# @router.post(
-#     '/refresh-token'
-# )
+@router.post(
+    '/refresh-token',
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Token updated successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Token updated successfully"
+                    }
+                }
+            }
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Refresh token is invalid",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Refresh token is invalid"
+                    }
+                }
+            }
+        }
+    }
+)
+async def refresh_token(
+        body: RefreshTokenSchema,
+        controller: Annotated[IUserController, Depends(get_user_controller)],
+        response: Response,
+):
+    return await controller.refresh_token(body.token, response)

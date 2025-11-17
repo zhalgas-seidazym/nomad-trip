@@ -16,7 +16,7 @@ class JWTService:
             expire = datetime.utcnow() + timedelta(minutes=expires_delta or self.access_token_expire_minutes)
         else:
             expire = datetime.utcnow() + timedelta(minutes=expires_delta or self.access_token_expire_minutes * 24 * 7)
-        to_encode.update({"exp": expire})
+        to_encode.update({"exp": int(expire.timestamp())})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         return encoded_jwt
 

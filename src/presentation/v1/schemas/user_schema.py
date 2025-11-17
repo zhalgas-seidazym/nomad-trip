@@ -35,3 +35,6 @@ class UpdateUserSchema(BaseModel):
     last_name: Optional[str] = None
     password: Optional[str] = None
     new_password: Optional[str] = None
+
+class RefreshTokenSchema(BaseModel):
+    token: str

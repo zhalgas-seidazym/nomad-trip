@@ -20,19 +20,17 @@ async def get_current_user(
 ):
     if token is None or not token.credentials:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    print(1)
 
     if token.scheme.lower() != "bearer":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    print(2)
+
     payload = jwt_service.decode_token(token.credentials)
     exp = payload['exp']
-    print(exp)
     if datetime.utcnow() >= datetime.utcfromtimestamp(exp):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    print(3)
+
     user = await user_repo.get_by_id(payload['user_id'])
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token")
-    print(4)
+
     return user
