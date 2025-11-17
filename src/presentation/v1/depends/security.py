@@ -1,11 +1,11 @@
-from datetime import time
+from datetime import time, datetime
 from typing import Optional
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.app.container import container
+from src.app.container import Container
 from src.application.users.interfaces import IUserRepository
 from src.domain.interfaces import IJWTService
 from src.presentation.v1.depends.repositories import get_user_repository
@@ -15,23 +15,24 @@ http_bearer = HTTPBearer()
 @inject
 async def get_current_user(
         token: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
-        jwt_service: IJWTService = Depends(Provide[container.jwt_service]),
+        jwt_service: IJWTService = Depends(Provide[Container.jwt_service]),
         user_repo: IUserRepository = Depends(get_user_repository),
 ):
     if token is None or not token.credentials:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    print(1)
 
     if token.scheme.lower() != "bearer":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-
+    print(2)
     payload = jwt_service.decode_token(token.credentials)
     exp = payload['exp']
-
-    if time.time() >= int(exp):
+    print(exp)
+    if datetime.utcnow() >= datetime.utcfromtimestamp(exp):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-
+    print(3)
     user = await user_repo.get_by_id(payload['user_id'])
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token")
+    print(4)
     return user

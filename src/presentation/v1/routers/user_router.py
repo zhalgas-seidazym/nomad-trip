@@ -30,11 +30,11 @@ router = APIRouter(
             }
         },
         status.HTTP_400_BAD_REQUEST: {
-            "description": "Request cannot be processed. Possible reasons: user already exists, or OTP was already sent and has not expired yet.",
+            "description": "OTP was already sent and has not expired yet",
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "User already exists"
+                        "detail": "OTP was already sent and has not expired yet"
                     }
                 }
             }
@@ -80,7 +80,7 @@ async def verify_otp(
         controller: Annotated[IUserController, Depends(get_user_controller)],
 ):
     return await controller.verify_otp(
-        user_data = UserDTO(**body.dict()), code=body.code, response=response
+        user_data = UserDTO(**{k: v for k, v in body.dict().items() if k != "code"}), code=body.code, response=response
     )
 
 @router.post(
@@ -183,3 +183,7 @@ async def delete_profile(
         user: UserDTO = Depends(get_current_user),
 ):
     return await controller.delete(user_id=user.id)
+
+# @router.post(
+#     '/refresh-token'
+# )

@@ -1,4 +1,5 @@
-from typing import Protocol, Optional
+from typing import Protocol, Optional, Any
+
 
 class IJWTService(Protocol):
     def encode_token(
@@ -6,11 +7,9 @@ class IJWTService(Protocol):
         data: dict,
         expires_delta: Optional[int] = None,
         is_access_token: bool = True
-    ) -> str:
-        ...
+    ) -> str: ...
 
-    def decode_token(self, token: str) -> dict:
-        ...
+    def decode_token(self, token: str) -> dict: ...
 
 
 class IEmailService(Protocol):
@@ -20,8 +19,7 @@ class IEmailService(Protocol):
         subject: str,
         body: str,
         html: bool = False
-    ) -> None:
-        ...
+    ) -> None: ...
 
 class IHashService(Protocol):
     @staticmethod
@@ -29,3 +27,6 @@ class IHashService(Protocol):
 
     @staticmethod
     def verify_password(password: str, hashed_password: str) -> bool: ...
+
+class IUoW(Protocol):
+    ...

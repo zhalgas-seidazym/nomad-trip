@@ -21,15 +21,16 @@ class UserController(IUserController):
         self.hash_service = hash_service
 
     async def send_otp(self, user_data: UserDTO):
-        user_check = await self.user_repository.get_by_email(user_data.email)
-        if user_check is not None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with {user_data.email} already exists")
         await self.email_otp_service.send_otp(user_data.email)
         return {
             "detail": "OTP code sent successfully",
         }
 
     async def verify_otp(self, user_data: UserDTO, code: str, response: Response):
+        user_check = await self.user_repository.get_by_email(user_data.email)
+        if user_check is not None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with {user_data.email} already exists")
+
         await self.email_otp_service.verify_otp(user_data.email, code)
 
         user_data.password = self.hash_service.hash_password(user_data.password)
@@ -39,6 +40,9 @@ class UserController(IUserController):
         elif user_data.is_company and user_data.last_name:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Last name is not allowed for company accounts")
 
+        if user_data.is_company:
+            user_data.role = UserRoles.COMPANY
+        user_data.is_company = None
 
         created = await self.user_repository.add(user_data.to_payload(exclude_none=True))
 
@@ -119,3 +123,5 @@ class UserController(IUserController):
         return {
             "details": "User deleted successfully",
         }
+
+    async def refresh_token(self, refresh_token: str, response: Response): ...

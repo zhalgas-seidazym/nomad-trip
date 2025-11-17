@@ -25,7 +25,7 @@ class EmailService:
 
         try:
             await aiosmtplib.send(
-                message=msg,
+                msg,
                 hostname=self.smtp_host,
                 port=self.smtp_port,
                 start_tls=True,
