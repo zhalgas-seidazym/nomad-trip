@@ -28,21 +28,12 @@ class UserController(IUserController):
 
     async def verify_otp(self, user_data: UserDTO, code: str, response: Response):
         user_check = await self._user_repository.get_by_email(user_data.email)
-        if user_check is not None:
+        if user_check:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with {user_data.email} already exists")
 
         await self._email_otp_service.verify_otp(user_data.email, code)
 
         user_data.password = self._hash_service.hash_password(user_data.password)
-
-        if not user_data.is_company and (user_data.last_name is None or user_data.last_name == ""):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Last name is required")
-        elif user_data.is_company and user_data.last_name:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Last name is not allowed for company accounts")
-
-        if user_data.is_company:
-            user_data.role = UserRoles.COMPANY
-        user_data.is_company = None
 
         created = await self._user_repository.add(user_data.to_payload(exclude_none=True))
 
@@ -112,9 +103,6 @@ class UserController(IUserController):
             user_data.password = None
             user_data.new_password = None
 
-
-        if user.role == UserRoles.COMPANY and user_data.last_name:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Last name is not allowed for company accounts")
 
         new_user = await self._user_repository.update(user.id, user_data.to_payload(exclude_none=True))
 

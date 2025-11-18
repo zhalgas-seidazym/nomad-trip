@@ -14,7 +14,6 @@ class UserDTO(BaseDTOMixin):
     email: Optional[str] = None
     password: Optional[str] = None
     new_password: Optional[str] = None
-    is_company: Optional[bool] = None
     role: Optional[UserRoles] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

@@ -16,6 +16,7 @@ services:
     depends_on:
       - db
       - redis
+      - minio
 
   db:
     image: postgres:16
@@ -35,6 +36,19 @@ services:
     volumes:
       - redis_data:/data
 
+  minio:
+    image: minio/minio:latest
+    container_name: nomad_trip_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - .env
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
 volumes:
   db_data:
   redis_data:
+  minio_data:

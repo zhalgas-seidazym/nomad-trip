@@ -1,4 +1,6 @@
-from typing import Protocol, Optional, Any
+from typing import Protocol, Optional, Any, List
+
+from fastapi import UploadFile
 
 
 class IJWTService(Protocol):
@@ -30,3 +32,12 @@ class IHashService(Protocol):
 
 class IUoW(Protocol):
     ...
+
+class IStorageService(Protocol):
+    async def upload_file(self, file: UploadFile, folder: Optional[str] = None) -> str: ...
+
+    async def upload_files(self, files: List[UploadFile], folder: Optional[str] = None) -> List[str]: ...
+
+    async def delete_file(self, file_path: str) -> None: ...
+
+    async def delete_files(self, files: List[str]) -> None: ...

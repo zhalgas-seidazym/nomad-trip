@@ -1,8 +1,8 @@
-"""changed users table columns for mapped
+"""user: created table
 
-Revision ID: 43b4631f2581
-Revises: 156d8e926a5f
-Create Date: 2025-11-11 13:06:37.503026
+Revision ID: cdb79122b632
+Revises: 
+Create Date: 2025-11-18 12:00:58.122143
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '43b4631f2581'
-down_revision: Union[str, Sequence[str], None] = '156d8e926a5f'
+revision: str = 'cdb79122b632'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
