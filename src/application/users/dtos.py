@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+from fastapi import UploadFile
+
 from src.domain.base_dto import BaseDTOMixin
 from src.domain.enums import UserRoles
 
@@ -15,5 +17,7 @@ class UserDTO(BaseDTOMixin):
     password: Optional[str] = None
     new_password: Optional[str] = None
     role: Optional[UserRoles] = None
+    avatar_url: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    avatar_file: Optional[UploadFile] = None

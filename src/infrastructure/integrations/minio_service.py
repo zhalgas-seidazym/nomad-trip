@@ -1,8 +1,10 @@
+import os
+import uuid
+import asyncio
 from typing import List, Optional
 from fastapi import UploadFile
 from minio import Minio
 from minio.error import S3Error
-from io import BytesIO
 
 
 class MinioService:
@@ -11,7 +13,7 @@ class MinioService:
             endpoint=endpoint,
             access_key=access_key,
             secret_key=secret_key,
-            secure=False  # True if https
+            secure=False
         )
         self.bucket = bucket
 
@@ -19,20 +21,23 @@ class MinioService:
             self.client.make_bucket(bucket)
 
     async def upload_file(self, file: UploadFile, folder: Optional[str] = None) -> str:
-        file_path = file.filename
-        if folder:
-            file_path = f"{folder}/{file.filename}"
+        _, ext = os.path.splitext(file.filename)
+        unique_name = f"{uuid.uuid4().hex}{ext}"
 
-        content = await file.read()
-        file_bytes = BytesIO(content)
+        file_path = f"{folder}/{unique_name}" if folder else unique_name
+
+        file.file.seek(0, os.SEEK_END)
+        file_size = file.file.tell()
+        file.file.seek(0)
 
         try:
-            self.client.put_object(
-                bucket_name=self.bucket,
-                object_name=file_path,
-                data=file_bytes,
-                length=len(content),
-                content_type=file.content_type
+            await asyncio.to_thread(
+                self.client.put_object,
+                self.bucket,
+                file_path,
+                file.file,
+                file_size,
+                file.content_type
             )
         except S3Error as e:
             raise Exception(f"MinIO upload failed: {e}")
@@ -40,31 +45,22 @@ class MinioService:
         return f"/{self.bucket}/{file_path}"
 
     async def upload_files(self, files: List[UploadFile], folder: Optional[str] = None) -> List[str]:
-        urls = []
-        for file in files:
-            url = await self.upload_file(file, folder)
-            urls.append(url)
-        return urls
+        return [await self.upload_file(file, folder) for file in files]
 
     async def delete_file(self, file_path: str) -> None:
-        """
-        Deletes a file from the bucket.
-        `file_path` should include the folder if used, e.g., "avatars/user1.png".
-        """
         try:
-            self.client.remove_object(self.bucket, file_path)
+            await asyncio.to_thread(self.client.remove_object, self.bucket, file_path)
         except S3Error as e:
             raise Exception(f"Failed to delete file from MinIO: {e}")
 
     async def delete_files(self, file_paths: List[str]) -> None:
-        """
-        Deletes multiple files at once.
-        """
         errors = []
+
         for path in file_paths:
             try:
                 await self.delete_file(path)
             except Exception as e:
                 errors.append(str(e))
+
         if errors:
             raise Exception(f"Some files could not be deleted: {errors}")

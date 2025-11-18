@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
     DATABASE_URL: str
+    ALEMBIC_URL: str
 
     # ---- Redis ----
     REDIS_URL: str
@@ -34,6 +35,12 @@ class Settings(BaseSettings):
 
     # ---- OTP ----
     OTP_TTL: int
+
+    # ---- MinIO ----
+    MINIO_ROOT_USER: str
+    MINIO_ROOT_PASSWORD: str
+    MINIO_BUCKET: str
+    MINIO_ENDPOINT: str
 
     @property
     def db_url(self) -> str:

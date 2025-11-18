@@ -7,6 +7,7 @@ from src.infrastructure.dbs.redis import RedisConnection
 from src.infrastructure.integrations.hash_service import HashService
 from src.infrastructure.integrations.jwt_service import JWTService
 from src.infrastructure.integrations.email_service import EmailService
+from src.infrastructure.integrations.minio_service import MinioService
 
 
 class Container(containers.DeclarativeContainer):
@@ -53,4 +54,12 @@ class Container(containers.DeclarativeContainer):
 
     hash_service = providers.Factory(
         HashService,
+    )
+
+    minio_service = providers.Factory(
+        MinioService,
+        endpoint=settings.MINIO_ENDPOINT,
+        access_key=settings.MINIO_ROOT_USER,
+        secret_key=settings.MINIO_ROOT_PASSWORD,
+        bucket=settings.MINIO_BUCKET
     )

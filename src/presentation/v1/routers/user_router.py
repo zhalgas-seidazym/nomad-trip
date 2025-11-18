@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, Response
+from fastapi import APIRouter, status, Depends, Response, UploadFile, File
 
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserController
@@ -155,11 +155,12 @@ async def profile_by_id(
     }
 )
 async def update_profile(
-        body: UpdateUserSchema,
         controller: Annotated[IUserController, Depends(get_user_controller)],
+        body: UpdateUserSchema = Depends(UpdateUserSchema.as_form()),
+        file: UploadFile = File(None),
         user: UserDTO = Depends(get_current_user),
 ):
-    return await controller.update(user=user, user_data=UserDTO(**body.dict()))
+    return await controller.update(user=user, user_data=UserDTO(**body.dict(), avatar_file=file))
 
 @router.delete(
     '',

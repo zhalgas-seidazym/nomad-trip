@@ -4,7 +4,7 @@ from fastapi import Depends
 from src.app.container import Container
 from src.application.users.controllers import UserController
 from src.application.users.interfaces import IUserRepository, IUserController, IEmailOtpService
-from src.domain.interfaces import IJWTService, IHashService
+from src.domain.interfaces import IJWTService, IHashService, IStorageService
 from src.presentation.v1.depends.repositories import get_user_repository
 
 
@@ -14,10 +14,12 @@ async def get_user_controller(
         email_otp_service: IEmailOtpService = Depends(Provide[Container.email_otp_service]),
         jwt_service: IJWTService = Depends(Provide[Container.jwt_service]),
         hash_service: IHashService = Depends(Provide[Container.hash_service]),
+        storage_service: IStorageService = Depends(Provide[Container.minio_service]),
 ) -> IUserController:
     return UserController(
         user_repository=user_repository,
         email_otp_service=email_otp_service,
         jwt_service=jwt_service,
         hash_service=hash_service,
+        storage_service=storage_service,
     )

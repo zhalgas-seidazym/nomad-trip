@@ -15,3 +15,4 @@ class User(Base, TimestampMixin):
     last_name: Mapped[str] = mapped_column(String, nullable=False)
     password: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[UserRoles] = mapped_column(Enum(UserRoles), nullable=False, default=UserRoles.PASSENGER)
+    avatar_url: Mapped[str] = mapped_column(String, nullable=True)

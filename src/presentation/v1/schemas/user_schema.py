@@ -26,7 +26,7 @@ class UserSchema(BaseModel):
     first_name: str
     last_name: str
     role: UserRoles
-    avatar_url: str
+    avatar_url: Optional[str] = None
 
     class Config:
         use_enum_values = True
@@ -36,6 +36,7 @@ class UpdateUserSchema(BaseSchema):
     last_name: Optional[str] = None
     password: Optional[str] = None
     new_password: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 
 class RefreshTokenSchema(BaseModel):

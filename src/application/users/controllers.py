@@ -4,7 +4,7 @@ from starlette.responses import Response
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserController, IUserRepository, IEmailOtpService
 from src.domain.enums import UserRoles
-from src.domain.interfaces import IJWTService, IHashService
+from src.domain.interfaces import IJWTService, IHashService, IStorageService
 
 
 class UserController(IUserController):
@@ -14,11 +14,13 @@ class UserController(IUserController):
             email_otp_service: IEmailOtpService,
             jwt_service: IJWTService,
             hash_service: IHashService,
+            storage_service: IStorageService,
     ):
         self._user_repository = user_repository
         self._email_otp_service = email_otp_service
         self._jwt_service = jwt_service
         self._hash_service = hash_service
+        self._storage_service = storage_service
 
     async def send_otp(self, user_data: UserDTO):
         await self._email_otp_service.send_otp(user_data.email)
@@ -103,8 +105,24 @@ class UserController(IUserController):
             user_data.password = None
             user_data.new_password = None
 
+        no_ava = False
 
-        new_user = await self._user_repository.update(user.id, user_data.to_payload(exclude_none=True))
+        if user_data.avatar_file:
+            ava_url = await self._storage_service.upload_file(user_data.avatar_file, 'avatar')
+            user_data.avatar_url = ava_url
+            user_data.avatar_file = None
+
+            if user.avatar_url:
+                await self._storage_service.delete_file(user.avatar_url)
+        elif not user_data.avatar_url and not user_data.avatar_file:
+            no_ava = True
+
+        to_update = user_data.to_payload(exclude_none=True)
+        if no_ava:
+            to_update["avatar_url"] = None
+
+
+        new_user = await self._user_repository.update(user.id, to_update)
 
         return new_user.to_payload(exclude_none=True)
 
