@@ -5,3 +5,8 @@ class UserRoles(str, Enum):
     PASSENGER = "passenger"
     DRIVER = "driver"
     COMPANY = "company"
+
+class Status(str, Enum):
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    WAITING = "waiting"
