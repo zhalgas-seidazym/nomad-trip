@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import HTTPException, status
 from starlette.responses import Response
 
@@ -22,13 +24,13 @@ class UserController(IUserController):
         self._hash_service = hash_service
         self._storage_service = storage_service
 
-    async def send_otp(self, user_data: UserDTO):
+    async def send_otp(self, user_data: UserDTO) -> Dict:
         await self._email_otp_service.send_otp(user_data.email)
         return {
             "detail": "OTP code sent successfully",
         }
 
-    async def verify_otp(self, user_data: UserDTO, code: str, response: Response):
+    async def verify_otp(self, user_data: UserDTO, code: str, response: Response) -> Dict:
         user_check = await self._user_repository.get_by_email(user_data.email)
         if user_check:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with {user_data.email} already exists")
@@ -54,7 +56,7 @@ class UserController(IUserController):
             "user_id": created.id,
         }
 
-    async def login(self, user_data: UserDTO, response: Response):
+    async def login(self, user_data: UserDTO, response: Response) -> Dict:
         user = await self._user_repository.get_by_email(user_data.email)
 
         if user is None:
@@ -79,7 +81,7 @@ class UserController(IUserController):
             "details": "Logged in successfully",
         }
 
-    async def get_profile(self, user_id: int):
+    async def get_profile(self, user_id: int) -> Dict:
         user = await self._user_repository.get_by_id(user_id)
 
         if user is None:
@@ -92,7 +94,7 @@ class UserController(IUserController):
 
         return user.to_payload(exclude_none=True)
 
-    async def update(self, user: UserDTO, user_data: UserDTO):
+    async def update(self, user: UserDTO, user_data: UserDTO) -> Dict:
         if user_data.new_password:
             check_password = self._hash_service.verify_password(user_data.password or "", user.password)
 
@@ -126,14 +128,14 @@ class UserController(IUserController):
 
         return new_user.to_payload(exclude_none=True)
 
-    async def delete(self, user_id: int):
+    async def delete(self, user_id: int) -> Dict:
         await self._user_repository.delete(user_id)
 
         return {
             "details": "User deleted successfully",
         }
 
-    async def refresh_token(self, refresh_token: str, response: Response):
+    async def refresh_token(self, refresh_token: str, response: Response) -> Dict:
         decode_token = self._jwt_service.decode_token(refresh_token)
         payload = {
             "user_id": decode_token.get("user_id"),
