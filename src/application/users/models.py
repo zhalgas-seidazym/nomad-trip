@@ -1,5 +1,5 @@
 from sqlalchemy import String, Enum, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.domain.base_model import TimestampMixin
 from src.infrastructure.dbs.postgre import Base
@@ -16,3 +16,5 @@ class User(Base, TimestampMixin):
     password: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[UserRoles] = mapped_column(Enum(UserRoles), nullable=False, default=UserRoles.PASSENGER)
     avatar_url: Mapped[str] = mapped_column(String, nullable=True)
+
+    company = relationship("Company", back_populates="owner", uselist=False)
