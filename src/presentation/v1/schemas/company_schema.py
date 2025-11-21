@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
-from src.domain.base_schema import BaseSchema
+from src.domain.base_schema import BaseSchema, PaginationSchema
 from src.domain.enums import Status
 
 
@@ -20,3 +20,6 @@ class CompanySchema(BaseModel):
     address: str
     logo_url: str
     status: Status
+
+class PaginationCompanySchema(PaginationSchema):
+    items: List[CompanySchema] = list

@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
 
-from src.application.companies.dtos import CompanyDTO
+from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
+from src.application.users.dtos import UserDTO
+from src.domain.enums import Status
 
 
 class ICompanyController(ABC):
@@ -12,7 +14,7 @@ class ICompanyController(ABC):
     async def get_my_company(self, user_id: int) -> Dict: ...
 
     @abstractmethod
-    async def search_company(self, text: str) -> Dict: ...
+    async def search_companies(self, user: UserDTO, text: str, company_status: Optional[Status], pagination: PaginationCompanyDTO) -> Dict: ...
 
 class ICompanyRepository(ABC):
     @abstractmethod
@@ -22,10 +24,7 @@ class ICompanyRepository(ABC):
     async def get_by_id(self, company_id: int) -> Optional[CompanyDTO]: ...
 
     @abstractmethod
-    async def get_by_name_or_description(self, text: str, approved: bool) -> List[Optional[CompanyDTO]]: ...
-
-    @abstractmethod
-    async def get_by_status(self, status: str) -> List[Optional[CompanyDTO]]: ...
+    async def get_by_query_and_status(self, text: str, status: str, pagination: Dict[str, Any]) -> PaginationCompanyDTO: ...
 
     @abstractmethod
     async def add(self, company_data: Dict[str, Any]) -> Optional[CompanyDTO]: ...

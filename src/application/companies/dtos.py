@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import UploadFile
 
-from src.domain.base_dto import BaseDTOMixin
+from src.domain.base_dto import BaseDTOMixin, PaginationDTO
 from src.domain.enums import Status
 
 
@@ -18,3 +18,7 @@ class CompanyDTO(BaseDTOMixin):
     logo_url: Optional[str] = None
     status: Optional[Status] = None
     logo_file: Optional[UploadFile] = None
+
+@dataclass
+class PaginationCompanyDTO(BaseDTOMixin, PaginationDTO):
+    items: Optional[List[CompanyDTO]] = None

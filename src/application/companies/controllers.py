@@ -1,9 +1,11 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from fastapi import HTTPException, status
 
-from src.application.companies.dtos import CompanyDTO
+from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, ICompanyRepository
+from src.application.users.dtos import UserDTO
+from src.domain.enums import UserRoles, Status
 from src.domain.interfaces import IStorageService
 
 
@@ -40,4 +42,14 @@ class CompanyController(ICompanyController):
 
         return company.to_payload(exclude_none=True)
 
-    async def search_company(self, text: str) -> Dict: ...
+    async def search_companies(self, user: UserDTO, text: str, company_status: Optional[Status], pagination: PaginationCompanyDTO) -> Dict:
+        if not user.role == UserRoles.ADMIN:
+            company_status = Status.APPROVED
+
+        pagination_dto = await self._company_repository.get_by_query_and_status(
+            text=text,
+            status=company_status,
+            pagination=pagination.to_payload(),
+        )
+
+        return pagination_dto.to_payload(exclude_none=True)

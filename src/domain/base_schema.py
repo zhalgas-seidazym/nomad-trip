@@ -1,5 +1,5 @@
 from inspect import Signature, Parameter
-from typing import Any, Optional, Literal
+from typing import Any, Optional, Literal, List
 
 from fastapi import Form, Query
 from pydantic import BaseModel
@@ -61,7 +61,7 @@ class SortSchema(BaseSchema):
 
 
 class PaginationSchema(BaseSchema):
-    page: int
-    per_page: int
+    page: int = 1
+    per_page: int = 10
     total: Optional[int] = None
-    items: list
+    items: List[Any] = list

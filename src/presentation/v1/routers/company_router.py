@@ -1,14 +1,15 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, status, Depends, UploadFile, File
+from fastapi import APIRouter, status, Depends, UploadFile, File, Query
 
-from src.application.companies.dtos import CompanyDTO
+from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController
 from src.application.users.dtos import UserDTO
+from src.domain.enums import Status
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_company_controller
 from src.presentation.v1.depends.security import get_current_user
-from src.presentation.v1.schemas.company_schema import CreateCompanySchema, CompanySchema
+from src.presentation.v1.schemas.company_schema import CreateCompanySchema, CompanySchema, PaginationCompanySchema
 
 router = APIRouter(
     prefix="/company",
@@ -60,3 +61,19 @@ async def get_my_company(
 ):
     return await controller.get_my_company(user.id)
 
+@router.get(
+    '/search',
+    status_code=status.HTTP_200_OK,
+    response_model=PaginationCompanySchema,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+    }
+)
+async def search_companies(
+        controller: Annotated[ICompanyController, Depends(get_company_controller)],
+        user: UserDTO = Depends(get_current_user),
+        query: str = Query(''),
+        company_status: Optional[Status] = Query(None),
+        pagination: PaginationCompanySchema = Depends(PaginationCompanySchema.as_query()),
+):
+    return await controller.search_companies(user=user, text=query, company_status=company_status, pagination=PaginationCompanyDTO(**pagination.dict()))

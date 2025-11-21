@@ -1,9 +1,9 @@
 from typing import Optional, Dict, Any, List
 
-from sqlalchemy import select, or_, insert, update, delete
+from sqlalchemy import select, or_, insert, update, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.application.companies.dtos import CompanyDTO
+from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyRepository
 from src.application.companies.models import Company
 from src.domain.enums import Status
@@ -27,26 +27,44 @@ class CompanyRepository(ICompanyRepository):
         orm = result.scalar_one_or_none()
         return CompanyDTO().to_application(orm) if orm else None
 
-    async def get_by_name_or_description(self, text: str, approved: bool) -> List[Optional[CompanyDTO]]:
+    async def get_by_query_and_status(
+        self, text: str, pagination: Dict[str, Any], status: Optional[Status] = None
+    ) -> PaginationCompanyDTO:
+
+        page = pagination.get("page", 1)
+        per_page = pagination.get("per_page", 10)
+
         conditions = [
             or_(
                 Company.name.ilike(f"%{text}%"),
                 Company.description.ilike(f"%{text}%")
-            )
+            ),
         ]
-        if approved:
-            conditions.append(Company.status == Status.APPROVED)
 
-        query = select(Company).where(*conditions)
+        if status is not None:
+            conditions.append(Company.status == status)
+
+        count_query = select(func.count(Company.id)).where(*conditions)
+        total = (await self._session.execute(count_query)).scalar_one()
+
+        query = (
+            select(Company)
+            .where(*conditions)
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+        )
+
         result = await self._session.execute(query)
         orm_list = result.scalars().all()
-        return [CompanyDTO().to_application(orm) for orm in orm_list]
 
-    async def get_by_status(self, status: str) -> List[Optional[CompanyDTO]]:
-        query = select(Company).where(Company.status == status)
-        result = await self._session.execute(query)
-        orm_list = result.scalars().all()
-        return [CompanyDTO().to_application(orm) for orm in orm_list]
+        items = [CompanyDTO().to_application(orm) for orm in orm_list]
+
+        return PaginationCompanyDTO(
+            page=page,
+            per_page=per_page,
+            total=total,
+            items=items
+        )
 
     async def add(self, company_data: Dict[str, Any]) -> Optional[CompanyDTO]:
         async with self._uow:
