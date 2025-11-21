@@ -16,6 +16,9 @@ class ICompanyController(ABC):
     @abstractmethod
     async def search_companies(self, user: UserDTO, text: str, company_status: Optional[Status], pagination: PaginationCompanyDTO) -> Dict: ...
 
+    @abstractmethod
+    async def get_company_by_id(self, user: UserDTO, company_id: int) -> Dict: ...
+
 class ICompanyRepository(ABC):
     @abstractmethod
     async def get_by_user_id(self, user_id: int) -> Optional[CompanyDTO]: ...

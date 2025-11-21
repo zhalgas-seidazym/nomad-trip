@@ -53,3 +53,15 @@ class CompanyController(ICompanyController):
         )
 
         return pagination_dto.to_payload(exclude_none=True)
+
+    async def get_company_by_id(self, user: UserDTO, company_id: int) -> Dict:
+        company = await self._company_repository.get_by_id(company_id)
+
+        if not company:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
+
+        if not company.status == Status.APPROVED:
+            if not user.role == UserRoles.ADMIN and not user.id == company.owner_id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+        return company.to_payload(exclude_none=True)

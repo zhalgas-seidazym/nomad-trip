@@ -77,3 +77,20 @@ async def search_companies(
         pagination: PaginationCompanySchema = Depends(PaginationCompanySchema.as_query()),
 ):
     return await controller.search_companies(user=user, text=query, company_status=company_status, pagination=PaginationCompanyDTO(**pagination.dict()))
+
+@router.get(
+    '/{company_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=CompanySchema,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
+    }
+)
+async def get_company_by_id(
+        company_id: int,
+        controller: Annotated[ICompanyController, Depends(get_company_controller)],
+        user: UserDTO = Depends(get_current_user),
+):
+    return await controller.get_company_by_id(company_id=company_id, user=user)
