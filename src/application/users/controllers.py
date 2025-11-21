@@ -110,7 +110,7 @@ class UserController(IUserController):
         no_ava = False
 
         if user_data.avatar_file:
-            ava_url = await self._storage_service.upload_file(user_data.avatar_file, 'avatar')
+            ava_url = await self._storage_service.upload_file(user_data.avatar_file, 'avatars')
             user_data.avatar_url = ava_url
             user_data.avatar_file = None
 

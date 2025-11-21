@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.application.companies.dtos import CompanyDTO
 from src.application.companies.interfaces import ICompanyRepository
 from src.application.companies.models import Company
+from src.domain.enums import Status
 from src.domain.interfaces import IUoW
 
 
@@ -26,13 +27,23 @@ class CompanyRepository(ICompanyRepository):
         orm = result.scalar_one_or_none()
         return CompanyDTO().to_application(orm) if orm else None
 
-    async def get_by_name_or_description(self, text: str) -> Optional[List[CompanyDTO]]:
-        query = select(Company).where(
+    async def get_by_name_or_description(self, text: str, approved: bool) -> List[Optional[CompanyDTO]]:
+        conditions = [
             or_(
                 Company.name.ilike(f"%{text}%"),
                 Company.description.ilike(f"%{text}%")
             )
-        )
+        ]
+        if approved:
+            conditions.append(Company.status == Status.APPROVED)
+
+        query = select(Company).where(*conditions)
+        result = await self._session.execute(query)
+        orm_list = result.scalars().all()
+        return [CompanyDTO().to_application(orm) for orm in orm_list]
+
+    async def get_by_status(self, status: str) -> List[Optional[CompanyDTO]]:
+        query = select(Company).where(Company.status == status)
         result = await self._session.execute(query)
         orm_list = result.scalars().all()
         return [CompanyDTO().to_application(orm) for orm in orm_list]
