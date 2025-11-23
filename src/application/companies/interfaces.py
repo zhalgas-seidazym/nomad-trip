@@ -22,6 +22,9 @@ class ICompanyController(ABC):
     @abstractmethod
     async def update_company(self, user: UserDTO, company_data: CompanyDTO) -> Dict: ...
 
+class IAdminCompanyController(ABC):
+    ...
+
 class ICompanyRepository(ABC):
     @abstractmethod
     async def get_by_user_id(self, user_id: int) -> Optional[CompanyDTO]: ...

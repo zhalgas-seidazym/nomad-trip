@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.app.container import Container
 from src.application.users.interfaces import IUserRepository
+from src.domain.enums import UserRoles
 from src.domain.interfaces import IJWTService
 from src.presentation.v1.depends.repositories import get_user_repository
 
@@ -33,4 +34,14 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token")
 
+    return user
+
+async def is_admin(
+        user = Depends(get_current_user)
+):
+    if user.role != UserRoles.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
     return user

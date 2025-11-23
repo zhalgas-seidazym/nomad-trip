@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from fastapi import HTTPException, status
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
-from src.application.companies.interfaces import ICompanyController, ICompanyRepository
+from src.application.companies.interfaces import ICompanyController, ICompanyRepository, IAdminCompanyController
 from src.application.users.dtos import UserDTO
 from src.domain.enums import UserRoles, Status
 from src.domain.interfaces import IStorageService
@@ -79,6 +79,16 @@ class CompanyController(ICompanyController):
 
             await self._storage_service.delete_file(company.logo_url)
 
+        company_data.status = Status.WAITING
+
         company = await self._company_repository.update(company.id, company_data.to_payload(exclude_none=True))
 
         return company.to_payload(exclude_none=True)
+
+
+class AdminCompanyController(IAdminCompanyController):
+    def __init__(
+            self,
+            company_repository: ICompanyRepository,
+    ):
+        self._company_repository = company_repository
