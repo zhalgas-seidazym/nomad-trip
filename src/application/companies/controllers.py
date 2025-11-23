@@ -65,3 +65,20 @@ class CompanyController(ICompanyController):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
         return company.to_payload(exclude_none=True)
+
+    async def update_company(self, user: UserDTO, company_data: CompanyDTO) -> Dict:
+        company = await self._company_repository.get_by_user_id(user.id)
+
+        if not company:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not have a company registered")
+
+        if company_data.logo_file:
+            logo_url = await self._storage_service.upload_file(company_data.logo_file, 'logos')
+            company_data.logo_url = logo_url
+            company_data.logo_file = None
+
+            await self._storage_service.delete_file(company.logo_url)
+
+        company = await self._company_repository.update(company.id, company_data.to_payload(exclude_none=True))
+
+        return company.to_payload(exclude_none=True)

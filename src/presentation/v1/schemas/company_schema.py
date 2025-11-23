@@ -23,3 +23,8 @@ class CompanySchema(BaseModel):
 
 class PaginationCompanySchema(PaginationSchema):
     items: List[CompanySchema] = list
+
+class UpdateCompanySchema(BaseSchema):
+    name: str
+    description: str
+    address: str

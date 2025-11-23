@@ -9,7 +9,8 @@ from src.domain.enums import Status
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_company_controller
 from src.presentation.v1.depends.security import get_current_user
-from src.presentation.v1.schemas.company_schema import CreateCompanySchema, CompanySchema, PaginationCompanySchema
+from src.presentation.v1.schemas.company_schema import CreateCompanySchema, CompanySchema, PaginationCompanySchema, \
+    UpdateCompanySchema
 
 router = APIRouter(
     prefix="/company",
@@ -94,3 +95,20 @@ async def get_company_by_id(
         user: UserDTO = Depends(get_current_user),
 ):
     return await controller.get_company_by_id(company_id=company_id, user=user)
+
+@router.put(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=CompanySchema,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def update_company(
+        controller: Annotated[ICompanyController, Depends(get_company_controller)],
+        logo_file: UploadFile = File(None),
+        body: UpdateCompanySchema = Depends(UpdateCompanySchema.as_form()),
+        user: UserDTO = Depends(get_current_user),
+):
+    return await controller.update_company(user, CompanyDTO(**body.dict(), logo_file=logo_file))
