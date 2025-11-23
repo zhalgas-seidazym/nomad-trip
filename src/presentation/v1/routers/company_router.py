@@ -113,6 +113,30 @@ async def update_company(
 ):
     return await controller.update_company(user, CompanyDTO(**body.dict(), logo_file=logo_file))
 
+@router.delete(
+    '',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Company deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Company deleted successfully",
+                    }
+                }
+            }
+        },
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def delete_company(
+        controller: Annotated[ICompanyController, Depends(get_company_controller)],
+        user: UserDTO = Depends(get_current_user),
+):
+    return await controller.delete_company(user=user)
+
 @admin_router.patch(
     '/{company_id}',
     status_code=status.HTTP_200_OK,

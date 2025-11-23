@@ -85,6 +85,17 @@ class CompanyController(ICompanyController):
 
         return company.to_payload(exclude_none=True)
 
+    async def delete_company(self, user: UserDTO) -> Dict:
+        company = await self._company_repository.get_by_user_id(user.id)
+
+        if not company:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
+
+        await self._company_repository.delete(company.id)
+
+        return {
+            "detail": "Company deleted successfully",
+        }
 
 class AdminCompanyController(IAdminCompanyController):
     ALLOWED_TRANSITIONS = {

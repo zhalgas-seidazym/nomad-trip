@@ -22,9 +22,12 @@ class ICompanyController(ABC):
     @abstractmethod
     async def update_company(self, user: UserDTO, company_data: CompanyDTO) -> Dict: ...
 
+    @abstractmethod
+    async def delete_company(self, user: UserDTO) -> Dict: ...
+
 class IAdminCompanyController(ABC):
     @abstractmethod
-    async def update_company_status(self, company_id: int, company_status: Status): ...
+    async def update_company_status(self, company_id: int, company_status: Status) -> Dict: ...
 
 class ICompanyRepository(ABC):
     @abstractmethod
