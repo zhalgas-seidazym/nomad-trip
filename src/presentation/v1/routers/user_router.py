@@ -152,6 +152,7 @@ async def profile_by_id(
     response_model=UserSchema,
     responses={
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
     }
 )
 async def update_profile(

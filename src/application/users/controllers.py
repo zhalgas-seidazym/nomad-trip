@@ -7,6 +7,7 @@ from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserController, IUserRepository, IEmailOtpService
 from src.domain.enums import UserRoles
 from src.domain.interfaces import IJWTService, IHashService, IStorageService
+from src.domain.value_objects import ALLOWED_IMAGE_TYPES
 
 
 class UserController(IUserController):
@@ -110,6 +111,9 @@ class UserController(IUserController):
         no_ava = False
 
         if user_data.avatar_file:
+            if user_data.avatar_file.content_type not in ALLOWED_IMAGE_TYPES:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+
             ava_url = await self._storage_service.upload_file(user_data.avatar_file, 'avatars')
             user_data.avatar_url = ava_url
             user_data.avatar_file = None
@@ -117,6 +121,8 @@ class UserController(IUserController):
             if user.avatar_url:
                 await self._storage_service.delete_file(user.avatar_url)
         elif not user_data.avatar_url and not user_data.avatar_file:
+            if user.avatar_url:
+                await self._storage_service.delete_file(user.avatar_url)
             no_ava = True
 
         to_update = user_data.to_payload(exclude_none=True)

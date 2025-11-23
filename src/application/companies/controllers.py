@@ -7,6 +7,7 @@ from src.application.companies.interfaces import ICompanyController, ICompanyRep
 from src.application.users.dtos import UserDTO
 from src.domain.enums import UserRoles, Status
 from src.domain.interfaces import IStorageService
+from src.domain.value_objects import ALLOWED_STATUS_TRANSITIONS, ALLOWED_IMAGE_TYPES
 
 
 class CompanyController(ICompanyController):
@@ -23,6 +24,8 @@ class CompanyController(ICompanyController):
         if exists:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already have a company")
 
+        if company_data.logo_file.content_type not in ALLOWED_IMAGE_TYPES:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
         logo_url = await self._storage_service.upload_file(company_data.logo_file, 'logos')
         company_data.logo_url = logo_url
         company_data.logo_file = None
@@ -73,6 +76,8 @@ class CompanyController(ICompanyController):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not have a company registered")
 
         if company_data.logo_file:
+            if company_data.logo_file.content_type not in ALLOWED_IMAGE_TYPES:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
             logo_url = await self._storage_service.upload_file(company_data.logo_file, 'logos')
             company_data.logo_url = logo_url
             company_data.logo_file = None
@@ -98,12 +103,6 @@ class CompanyController(ICompanyController):
         }
 
 class AdminCompanyController(IAdminCompanyController):
-    ALLOWED_TRANSITIONS = {
-        Status.WAITING: {Status.APPROVED, Status.REJECTED},
-        Status.APPROVED: {Status.REJECTED},
-        Status.REJECTED: {Status.APPROVED},
-    }
-
     def __init__(
             self,
             company_repository: ICompanyRepository,
@@ -116,7 +115,7 @@ class AdminCompanyController(IAdminCompanyController):
         if not company:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
 
-        if not company_status in self.ALLOWED_TRANSITIONS.get(company.status):
+        if not company_status in ALLOWED_STATUS_TRANSITIONS.get(company.status):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Cannot change status from {company.status} to {company_status}")
 
         await self._company_repository.update(company_id, CompanyDTO(status=company_status).to_payload(exclude_none=True))

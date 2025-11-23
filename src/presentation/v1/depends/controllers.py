@@ -29,7 +29,7 @@ async def get_user_controller(
 @inject
 async def get_company_controller(
         company_repository: ICompanyRepository = Depends(get_company_repository),
-        storage_service: IStorageService = Depends(Provide[Container.storage_service]),
+        storage_service: IStorageService = Depends(Provide[Container.minio_service]),
 ):
     return CompanyController(
         company_repository=company_repository,

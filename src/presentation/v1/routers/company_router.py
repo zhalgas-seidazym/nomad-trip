@@ -5,6 +5,7 @@ from fastapi import APIRouter, status, Depends, UploadFile, File, Query, Body
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, IAdminCompanyController
 from src.application.users.dtos import UserDTO
+from src.domain.base_schema import PaginationSchema
 from src.domain.enums import Status
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_company_controller, get_admin_company_controller
@@ -36,6 +37,7 @@ admin_router = APIRouter(
             }
         },
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
         status.HTTP_409_CONFLICT: RESPONSE_409
     }
 )
@@ -75,7 +77,7 @@ async def search_companies(
         user: UserDTO = Depends(get_current_user),
         query: str = Query(''),
         company_status: Optional[Status] = Query(None),
-        pagination: PaginationCompanySchema = Depends(PaginationCompanySchema.as_query()),
+        pagination: PaginationCompanySchema = Depends(PaginationSchema.as_query()),
 ):
     return await controller.search_companies(user=user, text=query, company_status=company_status, pagination=PaginationCompanyDTO(**pagination.dict()))
 

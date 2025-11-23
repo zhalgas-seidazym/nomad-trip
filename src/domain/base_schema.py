@@ -2,7 +2,7 @@ from inspect import Signature, Parameter
 from typing import Any, Optional, Literal, List
 
 from fastapi import Form, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class BaseSchema(BaseModel):
@@ -64,4 +64,3 @@ class PaginationSchema(BaseSchema):
     page: int = 1
     per_page: int = 10
     total: Optional[int] = None
-    items: List[Any] = list

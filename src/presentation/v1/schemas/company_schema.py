@@ -22,7 +22,7 @@ class CompanySchema(BaseModel):
     status: Status
 
 class PaginationCompanySchema(PaginationSchema):
-    items: List[CompanySchema] = list
+    items: Optional[List[CompanySchema]] = None
 
 class UpdateCompanySchema(BaseSchema):
     name: str

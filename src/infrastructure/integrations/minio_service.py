@@ -48,8 +48,12 @@ class MinioService:
         return [await self.upload_file(file, folder) for file in files]
 
     async def delete_file(self, file_path: str) -> None:
+        key = file_path
+        if file_path.startswith(f"/{self.bucket}/"):
+            key = file_path[len(self.bucket) + 2:]
+
         try:
-            await asyncio.to_thread(self.client.remove_object, self.bucket, file_path)
+            await asyncio.to_thread(self.client.remove_object, self.bucket, key)
         except S3Error as e:
             raise Exception(f"Failed to delete file from MinIO: {e}")
 
