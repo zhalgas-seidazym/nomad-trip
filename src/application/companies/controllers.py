@@ -87,8 +87,30 @@ class CompanyController(ICompanyController):
 
 
 class AdminCompanyController(IAdminCompanyController):
+    ALLOWED_TRANSITIONS = {
+        Status.WAITING: {Status.APPROVED, Status.REJECTED},
+        Status.APPROVED: {Status.REJECTED},
+        Status.REJECTED: {Status.APPROVED},
+    }
+
     def __init__(
             self,
             company_repository: ICompanyRepository,
     ):
         self._company_repository = company_repository
+
+    async def update_company_status(self, company_id: int, company_status: Status):
+        company = await self._company_repository.get_by_id(company_id)
+
+        if not company:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
+
+        if not company_status in self.ALLOWED_TRANSITIONS.get(company.status):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Cannot change status from {company.status} to {company_status}")
+
+        await self._company_repository.update(company_id, CompanyDTO(status=company_status).to_payload(exclude_none=True))
+
+        return {
+            "detail": f"Company {company_id} status updated successfully",
+        }
+

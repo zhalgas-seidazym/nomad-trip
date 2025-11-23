@@ -2,7 +2,7 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import Depends
 
 from src.app.container import Container
-from src.application.companies.controllers import CompanyController
+from src.application.companies.controllers import CompanyController, AdminCompanyController
 from src.application.companies.interfaces import ICompanyRepository
 from src.application.users.controllers import UserController
 from src.application.users.interfaces import IUserRepository, IUserController, IEmailOtpService
@@ -34,4 +34,11 @@ async def get_company_controller(
     return CompanyController(
         company_repository=company_repository,
         storage_service=storage_service,
+    )
+
+async def get_admin_company_controller(
+        company_repository: ICompanyRepository = Depends(get_company_repository),
+):
+    return AdminCompanyController(
+        company_repository=company_repository,
     )
