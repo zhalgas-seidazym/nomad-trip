@@ -1,6 +1,7 @@
 from sqlalchemy import String, Integer, ForeignKey, Enum, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.application.drivers.models import driver_company_table
 from src.infrastructure.dbs.postgre import Base
 from src.domain.base_model import TimestampMixin
 from src.domain.enums import Status
@@ -12,10 +13,8 @@ class Company(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     owner_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True
+        Integer, ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False, unique=True, index=True
     )
 
     name: Mapped[str] = mapped_column(String, nullable=False)
@@ -29,7 +28,6 @@ class Company(Base, TimestampMixin):
         nullable=False,
         default=Status.WAITING
     )
-
     rejection_reason: Mapped[str] = mapped_column(
         Text,
         nullable=True,
@@ -37,3 +35,9 @@ class Company(Base, TimestampMixin):
     )
 
     owner = relationship("User", back_populates="company")
+
+    drivers = relationship(
+        "Driver",
+        secondary=driver_company_table,
+        back_populates="companies"
+    )

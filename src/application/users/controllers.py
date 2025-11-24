@@ -25,8 +25,8 @@ class UserController(IUserController):
         self._hash_service = hash_service
         self._storage_service = storage_service
 
-    async def send_otp(self, user_data: UserDTO) -> Dict:
-        await self._email_otp_service.send_otp(user_data.email)
+    async def send_otp(self, email: str) -> Dict:
+        await self._email_otp_service.send_otp(email)
         return {
             "detail": "OTP code sent successfully",
         }

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 
 from pydantic import BaseModel
@@ -20,6 +21,12 @@ class CompanySchema(BaseModel):
     address: str
     logo_url: str
     status: Status
+    rejection_reason: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        use_enum_values = True
 
 class PaginationCompanySchema(PaginationSchema):
     items: Optional[List[CompanySchema]] = None

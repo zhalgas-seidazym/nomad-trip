@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional, List
 
 from fastapi import UploadFile
@@ -17,8 +18,10 @@ class CompanyDTO(BaseDTOMixin):
     address: Optional[str] = None
     logo_url: Optional[str] = None
     status: Optional[Status] = None
-    logo_file: Optional[UploadFile] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     rejection_reason: Optional[str] = None
+    logo_file: Optional[UploadFile] = None
 
 @dataclass
 class PaginationCompanyDTO(BaseDTOMixin, PaginationDTO):

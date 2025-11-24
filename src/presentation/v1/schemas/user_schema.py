@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr
@@ -5,9 +6,6 @@ from pydantic import BaseModel, EmailStr
 from src.domain.base_schema import BaseSchema
 from src.domain.enums import UserRoles
 
-
-class SendOTPSchema(BaseModel):
-    email: EmailStr
 
 class VerifyOTPSchema(BaseModel):
     email: EmailStr
@@ -27,6 +25,8 @@ class UserSchema(BaseModel):
     last_name: str
     role: UserRoles
     avatar_url: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         use_enum_values = True
@@ -37,7 +37,3 @@ class UpdateUserSchema(BaseSchema):
     password: Optional[str] = None
     new_password: Optional[str] = None
     avatar_url: Optional[str] = None
-
-
-class RefreshTokenSchema(BaseModel):
-    token: str

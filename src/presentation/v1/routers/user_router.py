@@ -1,14 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, Response, UploadFile, File
+from fastapi import APIRouter, status, Depends, Response, UploadFile, File, Body
+from pydantic import EmailStr
 
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserController
-from src.domain.responses import RESPONSE_404, RESPONSE_401, RESPONSE_403, RESPONSE_400
+from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_user_controller
 from src.presentation.v1.depends.security import get_current_user
-from src.presentation.v1.schemas.user_schema import SendOTPSchema, VerifyOTPSchema, LoginSchema, UserSchema, \
-    UpdateUserSchema, RefreshTokenSchema
+from src.presentation.v1.schemas.user_schema import VerifyOTPSchema, LoginSchema, UserSchema, \
+    UpdateUserSchema
 
 router = APIRouter(
     prefix="/user",
@@ -42,10 +43,10 @@ router = APIRouter(
     }
 )
 async def send_otp(
-        body: SendOTPSchema,
         controller: Annotated[IUserController, Depends(get_user_controller)],
+        email: EmailStr = Body(),
 ):
-    return await controller.send_otp(UserDTO(email=body.dict().get("email")))
+    return await controller.send_otp(email)
 
 @router.post(
     '/verify-otp',
@@ -212,8 +213,8 @@ async def delete_profile(
     }
 )
 async def refresh_token(
-        body: RefreshTokenSchema,
         controller: Annotated[IUserController, Depends(get_user_controller)],
         response: Response,
+        token: str = Body(),
 ):
-    return await controller.refresh_token(body.token, response)
+    return await controller.refresh_token(token, response)
