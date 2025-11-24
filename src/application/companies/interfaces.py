@@ -8,7 +8,7 @@ from src.domain.enums import Status
 
 class ICompanyController(ABC):
     @abstractmethod
-    async def create_company(self, company_data: CompanyDTO) -> Dict: ...
+    async def create_company(self, user: UserDTO, company_data: CompanyDTO) -> Dict: ...
 
     @abstractmethod
     async def get_my_company(self, user_id: int) -> Dict: ...
@@ -27,7 +27,7 @@ class ICompanyController(ABC):
 
 class IAdminCompanyController(ABC):
     @abstractmethod
-    async def update_company_status(self, company_id: int, company_status: Status) -> Dict: ...
+    async def update_company_status(self, company_data: CompanyDTO) -> Dict: ...
 
 class ICompanyRepository(ABC):
     @abstractmethod

@@ -18,6 +18,7 @@ class CompanyDTO(BaseDTOMixin):
     logo_url: Optional[str] = None
     status: Optional[Status] = None
     logo_file: Optional[UploadFile] = None
+    rejection_reason: Optional[str] = None
 
 @dataclass
 class PaginationCompanyDTO(BaseDTOMixin, PaginationDTO):

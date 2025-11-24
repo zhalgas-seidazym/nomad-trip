@@ -163,6 +163,13 @@ async def update_company_status(
         controller: Annotated[IAdminCompanyController, Depends(get_admin_company_controller)],
         company_id: int,
         company_status: Status = Body(),
+        rejection_reason: Optional[str] = Body(None),
         user: UserDTO = Depends(is_admin),
 ):
-    return await controller.update_company_status(company_id=company_id, company_status=company_status)
+    return await controller.update_company_status(
+        CompanyDTO(
+            id=company_id,
+            status=company_status,
+            rejection_reason=rejection_reason,
+        )
+    )

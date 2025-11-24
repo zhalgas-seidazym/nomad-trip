@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, ForeignKey, Enum
+from sqlalchemy import String, Integer, ForeignKey, Enum, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.infrastructure.dbs.postgre import Base
@@ -28,6 +28,12 @@ class Company(Base, TimestampMixin):
         Enum(Status),
         nullable=False,
         default=Status.WAITING
+    )
+
+    rejection_reason: Mapped[str] = mapped_column(
+        Text,
+        nullable=True,
+        default=None
     )
 
     owner = relationship("User", back_populates="company")
