@@ -9,6 +9,7 @@ from src.infrastructure.dbs.postgre import Base
 
 from src.application.users.models import User
 from src.application.companies.models import Company
+from src.application.drivers.models import Driver, driver_company_table
 
 
 config = context.config

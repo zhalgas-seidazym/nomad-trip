@@ -48,7 +48,7 @@ class UserRepository(IUserRepository):
             orm = result.scalar_one_or_none()
             return UserDTO.to_application(orm) if orm else None
 
-    async def delete(self, user_id: int) -> None:
+    async def delete(self, user_id: int) -> Optional[bool]:
         async with self._uow:
             query = delete(User).where(User.id == user_id).returning(User.id)
             result = await self._session.execute(query)

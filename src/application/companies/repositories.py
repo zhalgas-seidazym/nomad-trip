@@ -88,7 +88,7 @@ class CompanyRepository(ICompanyRepository):
             orm = result.scalar_one_or_none()
             return CompanyDTO.to_application(orm) if orm else None
 
-    async def delete(self, company_id: int) -> Optional[CompanyDTO]:
+    async def delete(self, company_id: int) -> Optional[bool]:
         async with self._uow:
             query = delete(Company).where(Company.id == company_id).returning(Company.id)
             result = await self._session.execute(query)

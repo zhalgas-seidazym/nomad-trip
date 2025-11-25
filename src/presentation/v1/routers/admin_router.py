@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from . import company_router
+from . import company_router, driver_router
 
 router = APIRouter(
     prefix="/admin",
@@ -8,3 +8,4 @@ router = APIRouter(
 )
 
 router.include_router(company_router.admin_router)
+router.include_router(driver_router.admin_router)
