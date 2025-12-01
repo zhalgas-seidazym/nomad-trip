@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy import select, insert, update, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -72,21 +73,40 @@ class DriverCompanyRepository(IDriverCompanyRepository):
         self._session = session
         self._uow = uow
 
-    async def get(self, driver_id: int, company_id: int, pagination: Dict[str, Any]) -> PaginationDriverCompanyDTO:
+    async def get(
+            self,
+            driver_id: Optional[int],
+            company_id: Optional[int],
+            pagination: Dict[str, Any]
+    ) -> PaginationDriverCompanyDTO:
+
         page = pagination.get("page", 1)
         per_page = pagination.get("per_page", 10)
 
-        count_stmt = select(func.count()).select_from(driver_company_table).where(
-            driver_company_table.c.driver_id == driver_id,
-            driver_company_table.c.company_id == company_id
+        conditions = []
+
+        if driver_id is not None:
+            conditions.append(driver_company_table.c.driver_id == driver_id)
+
+        if company_id is not None:
+            conditions.append(driver_company_table.c.company_id == company_id)
+
+        if not conditions:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
+
+        count_stmt = (
+            select(func.count())
+            .select_from(driver_company_table)
+            .where(*conditions)
         )
         total = (await self._session.execute(count_stmt)).scalar_one()
 
-        # query with offset/limit
-        stmt = select(driver_company_table).where(
-            driver_company_table.c.driver_id == driver_id,
-            driver_company_table.c.company_id == company_id
-        ).offset((page - 1) * per_page).limit(per_page)
+        stmt = (
+            select(driver_company_table)
+            .where(*conditions)
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+        )
 
         result = await self._session.execute(stmt)
         rows = result.mappings().all()
@@ -98,7 +118,6 @@ class DriverCompanyRepository(IDriverCompanyRepository):
             total=total,
             items=items
         )
-
     async def add(self, driver_company_data: Dict[str, Any]) -> Optional[DriverCompanyDTO]:
         async with self._uow:
             stmt = insert(driver_company_table).values(**driver_company_data)

@@ -1,9 +1,13 @@
 from typing import Dict
 
+from fastapi import HTTPException, status
+
 from src.application.drivers.dtos import DriverDTO
 from src.application.drivers.interfaces import IDriverController, IDriverRepository, IDriverCompanyRepository
 from src.application.users.dtos import UserDTO
+from src.domain.enums import UserRoles
 from src.domain.interfaces import IStorageService
+from src.domain.value_objects import ALLOWED_IMAGE_TYPES
 
 
 class DriverController(IDriverController):
@@ -18,4 +22,29 @@ class DriverController(IDriverController):
         self._storage_service = storage_service
 
     async def create_driver_profile(self, driver_data: DriverDTO, user: UserDTO) -> Dict:
-        ...
+        if not user.role == UserRoles.PASSENGER:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="To create a driver profile you must to be passenger")
+
+        driver = await self._driver_repository.get_by_user_id(user.id)
+
+        if driver:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Driver profile already exists")
+
+        if driver_data.id_photo_file.content_type not in ALLOWED_IMAGE_TYPES or driver_data.licence_photo_file.content_type not in ALLOWED_IMAGE_TYPES:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+
+        id_photo_url = await self._storage_service.upload_file(driver_data.id_photo_file, 'ids')
+        driver_data.id_photo_url = id_photo_url
+        driver_data.id_photo_file = None
+
+        licence = await self._storage_service.upload_file(driver_data.licence_photo_file, 'ids')
+        driver_data.licence = licence
+        driver_data.licence_photo_file = None
+
+        created = await self._driver_repository.add(driver_data.to_payload(exclude_none=True))
+
+        return {
+            "detail": "Driver profile created successfully",
+            "driver_id": created.id,
+        }
+
