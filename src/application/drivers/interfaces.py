@@ -2,8 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 from src.application.drivers.dtos import DriverDTO, DriverCompanyDTO, PaginationDriverDTO, PaginationDriverCompanyDTO
+from src.application.users.dtos import UserDTO
 from src.domain.enums import Status
 
+
+class IDriverController(ABC):
+    @abstractmethod
+    async def create_driver_profile(self, driver_data: DriverDTO, user: UserDTO)-> Dict: ...
 
 class IDriverRepository(ABC):
     @abstractmethod

@@ -10,3 +10,4 @@ admin_router = APIRouter(
     prefix="/driver",
     tags=["admin", "driver"]
 )
+
