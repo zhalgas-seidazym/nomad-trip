@@ -13,6 +13,8 @@ class DriverCompanyDTO(BaseDTOMixin):
     driver_id: Optional[int] = None
     company_id: Optional[int] = None
     status: Optional[Status] = None
+    created_at: Optional[date] = None
+    updated_at: Optional[date] = None
 
 @dataclass
 class DriverDTO(BaseDTOMixin):
@@ -27,6 +29,8 @@ class DriverDTO(BaseDTOMixin):
     status: Optional[Status] = None
     rejection_reason: Optional[str] = None
     applications: Optional[List[DriverCompanyDTO]] = None
+    created_at: Optional[date] = None
+    updated_at: Optional[date] = None
     id_photo_file: Optional[UploadFile] = None
     licence_photo_file: Optional[UploadFile] = None
 

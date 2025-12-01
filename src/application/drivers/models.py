@@ -1,7 +1,7 @@
 from datetime import date
 
 from sqlalchemy.dialects.postgresql import ENUM as PGEnum
-from sqlalchemy import String, Integer, ForeignKey, Enum, Text, Table, Column, Date
+from sqlalchemy import String, Integer, ForeignKey, Enum, Text, Table, Column, Date, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.infrastructure.dbs.postgre import Base
 from src.domain.base_model import TimestampMixin
@@ -19,7 +19,9 @@ driver_company_table = Table(
     Base.metadata,
     Column("driver_id", Integer, ForeignKey("drivers.id", ondelete="CASCADE"), primary_key=True),
     Column("company_id", Integer, ForeignKey("companies.id", ondelete="CASCADE"), primary_key=True),
-    Column("status", status_enum, nullable=False, default=Status.WAITING)
+    Column("status", status_enum, nullable=False, default=Status.WAITING),
+    Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
+    Column("updated_at", DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
 )
 
 class Driver(Base, TimestampMixin):

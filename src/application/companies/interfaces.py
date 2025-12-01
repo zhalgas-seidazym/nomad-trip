@@ -5,6 +5,7 @@ from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.users.dtos import UserDTO
 from src.domain.enums import Status
 
+# TODO: get_applications, update_application_status
 
 class ICompanyController(ABC):
     @abstractmethod

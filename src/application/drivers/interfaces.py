@@ -5,6 +5,8 @@ from src.application.drivers.dtos import DriverDTO, DriverCompanyDTO, Pagination
 from src.application.users.dtos import UserDTO
 from src.domain.enums import Status
 
+# TODO: update_driver_profile, get_driver_profile, get_driver_profile_by_id, delete_driver_profile, add_application, get_applications,
+# TODO: update_driver_status
 
 class IDriverController(ABC):
     @abstractmethod
