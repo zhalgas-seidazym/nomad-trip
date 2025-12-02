@@ -4,6 +4,7 @@ from fastapi import APIRouter, status as s, Depends, UploadFile, File, Query, Bo
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, IAdminCompanyController
+from src.application.drivers.dtos import PaginationDriverCompanyDTO
 from src.application.users.dtos import UserDTO
 from src.domain.base_schema import PaginationSchema
 from src.domain.enums import Status
@@ -12,6 +13,7 @@ from src.presentation.v1.depends.controllers import get_company_controller, get_
 from src.presentation.v1.depends.security import get_current_user, is_admin, is_company
 from src.presentation.v1.schemas.company_schema import CreateCompanySchema, CompanySchema, PaginationCompanySchema, \
     UpdateCompanySchema
+from src.presentation.v1.schemas.driver_schema import PaginationDriverCompanySchema
 
 router = APIRouter(
     prefix="/company",
@@ -81,6 +83,24 @@ async def search_companies(
         pagination: PaginationCompanySchema = Depends(PaginationSchema.as_query()),
 ):
     return await controller.search_companies(user=user, text=query, status=status, pagination=PaginationCompanyDTO(**pagination.dict()))
+
+@router.get(
+    '/application',
+    status_code=s.HTTP_200_OK,
+    response_model=PaginationDriverCompanySchema,
+    responses={
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def get_company_applications(
+        controller: Annotated[ICompanyController, Depends(get_company_controller)],
+        user: UserDTO = Depends(is_company),
+        pagination: PaginationDriverCompanySchema = Depends(PaginationSchema.as_query()),
+        status: Optional[Status] = Query(None),
+):
+    return await controller.get_applications(user=user, status=status, pagination=PaginationDriverCompanyDTO(**pagination.dict()))
 
 @router.get(
     '/{company_id}',

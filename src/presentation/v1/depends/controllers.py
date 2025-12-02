@@ -34,11 +34,13 @@ async def get_user_controller(
 async def get_company_controller(
         company_repository: ICompanyRepository = Depends(get_company_repository),
         user_repository: IUserRepository = Depends(get_user_repository),
+        driver_company_repository: IDriverCompanyRepository = Depends(get_driver_company_repository),
         storage_service: IStorageService = Depends(Provide[Container.minio_service]),
 ) -> ICompanyController:
     return CompanyController(
         company_repository=company_repository,
         user_repository=user_repository,
+        driver_company_repository=driver_company_repository,
         storage_service=storage_service,
     )
 

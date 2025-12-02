@@ -205,7 +205,7 @@ async def get_driver_profiles(
 ):
     return await controller.get_driver_profiles(status, PaginationDriverDTO(**pagination.dict()))
 
-@admin_router.post(
+@admin_router.patch(
     '/{driver_id}',
     status_code=s.HTTP_200_OK,
     responses={

@@ -4,6 +4,8 @@ from fastapi import HTTPException, status as s
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, ICompanyRepository, IAdminCompanyController
+from src.application.drivers.dtos import PaginationDriverCompanyDTO
+from src.application.drivers.interfaces import IDriverCompanyRepository
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserRepository
 from src.domain.enums import UserRoles, Status
@@ -15,11 +17,13 @@ class CompanyController(ICompanyController):
     def __init__(
             self,
             company_repository: ICompanyRepository,
+            driver_company_repository: IDriverCompanyRepository,
             user_repository: IUserRepository,
             storage_service: IStorageService,
     ):
         self._company_repository = company_repository
         self._user_repository = user_repository
+        self._driver_company_repository = driver_company_repository
         self._storage_service = storage_service
 
     async def create_company(self, user: UserDTO, company_data: CompanyDTO) -> Dict:
@@ -109,6 +113,22 @@ class CompanyController(ICompanyController):
         return {
             "detail": "Company deleted successfully",
         }
+
+    async def get_applications(self, user: UserDTO, status: Optional[Status], pagination: PaginationDriverCompanyDTO) -> Dict:
+        company = await self._company_repository.get_by_user_id(user.id)
+
+        if not company:
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Company not found")
+
+        response = await self._driver_company_repository.get(
+            company_id=company.id,
+            status=status,
+            pagination=pagination.to_payload(exclude_none=True),
+        )
+
+        return response.to_payload(exclude_none=True)
+
+
 
 class AdminCompanyController(IAdminCompanyController):
     def __init__(

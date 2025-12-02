@@ -55,6 +55,9 @@ class UpdateDriverSchema(BaseSchema):
 
         return cleaned
 
+class PaginationDriverSchema(PaginationSchema):
+    items: Optional[List[DriverSchema]] = None
+
 class DriverCompanySchema(BaseModel):
     driver_id: int
     company_id: int
@@ -65,6 +68,3 @@ class DriverCompanySchema(BaseModel):
 
 class PaginationDriverCompanySchema(PaginationSchema):
     items: Optional[List[DriverCompanySchema]] = None
-
-class PaginationDriverSchema(PaginationSchema):
-    items: Optional[List[DriverSchema]] = None
