@@ -1,10 +1,10 @@
 import re
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, field_validator
 
-from src.domain.base_schema import BaseSchema
+from src.domain.base_schema import BaseSchema, PaginationSchema
 from src.domain.enums import Status
 
 
@@ -54,3 +54,14 @@ class UpdateDriverSchema(BaseSchema):
             raise ValueError("Phone number must be in format +7XXXXXXXXXX")
 
         return cleaned
+
+class DriverCompanySchema(BaseModel):
+    driver_id: int
+    company_id: int
+    status: Status
+    rejection_reason: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+class PaginationDriverCompanySchema(PaginationSchema):
+    items: Optional[List[DriverCompanySchema]] = None

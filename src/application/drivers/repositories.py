@@ -86,6 +86,7 @@ class DriverCompanyRepository(IDriverCompanyRepository):
             self,
             driver_id: Optional[int],
             company_id: Optional[int],
+            application_status: Optional[Status],
             pagination: Dict[str, Any]
     ) -> PaginationDriverCompanyDTO:
 
@@ -94,14 +95,17 @@ class DriverCompanyRepository(IDriverCompanyRepository):
 
         conditions = []
 
-        if driver_id is not None:
+        if driver_id:
             conditions.append(driver_company_table.c.driver_id == driver_id)
 
-        if company_id is not None:
+        if company_id:
             conditions.append(driver_company_table.c.company_id == company_id)
 
         if not conditions:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
+
+        if application_status:
+            conditions.append(driver_company_table.c.status == application_status)
 
         count_stmt = (
             select(func.count())

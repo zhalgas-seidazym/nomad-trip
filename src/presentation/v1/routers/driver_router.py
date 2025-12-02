@@ -1,15 +1,17 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, status, Depends, UploadFile, File, Body
-from watchfiles import awatch
+from fastapi import APIRouter, status, Depends, UploadFile, File, Body, Query
 
-from src.application.drivers.dtos import DriverDTO
+from src.application.drivers.dtos import DriverDTO, PaginationDriverCompanyDTO
 from src.application.drivers.interfaces import IDriverController
 from src.application.users.dtos import UserDTO
+from src.domain.base_schema import PaginationSchema
+from src.domain.enums import Status
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_driver_controller
 from src.presentation.v1.depends.security import is_driver, get_current_user
-from src.presentation.v1.schemas.driver_schema import CreateDriverSchema, DriverSchema, UpdateDriverSchema
+from src.presentation.v1.schemas.driver_schema import CreateDriverSchema, DriverSchema, UpdateDriverSchema, \
+    PaginationDriverCompanySchema
 
 router = APIRouter(
     prefix="/driver",
@@ -101,6 +103,24 @@ async def add_application(
         user: UserDTO = Depends(is_driver),
 ):
     return await controller.add_application(user, company_id)
+
+@router.get(
+    '/application',
+    status_code=status.HTTP_200_OK,
+    response_model=PaginationDriverCompanySchema,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def get_my_applications(
+        controller: Annotated[IDriverController, Depends(get_driver_controller)],
+        application_status: Optional[Status] = Query(None),
+        pagination: PaginationDriverCompanySchema = Depends(PaginationSchema.as_query()),
+        user: UserDTO = Depends(is_driver),
+):
+    return await controller.get_applications(user=user, application_status=application_status, pagination=PaginationDriverCompanyDTO(**pagination.dict()))
 
 
 @router.get(

@@ -5,7 +5,7 @@ from src.application.drivers.dtos import DriverDTO, DriverCompanyDTO, Pagination
 from src.application.users.dtos import UserDTO
 from src.domain.enums import Status
 
-# TODO: add_application, get_applications,
+# TODO: get_applications,
 # TODO: update_driver_status, get_drivers_by_status
 
 class IDriverController(ABC):
@@ -26,6 +26,9 @@ class IDriverController(ABC):
 
     @abstractmethod
     async def add_application(self, user: UserDTO, company_id: int) -> Dict: ...
+
+    @abstractmethod
+    async def get_applications(self, user: UserDTO, application_status: Optional[Status], pagination: PaginationDriverCompanyDTO) -> Dict: ...
 
 class IDriverRepository(ABC):
     @abstractmethod
@@ -48,7 +51,13 @@ class IDriverRepository(ABC):
 
 class IDriverCompanyRepository(ABC):
     @abstractmethod
-    async def get(self, driver_id: Optional[int], company_id: Optional[int], pagination: Dict[str, Any]) -> Optional[PaginationDriverCompanyDTO]: ...
+    async def get(
+            self,
+            driver_id: Optional[int],
+            company_id: Optional[int],
+            application_status: Optional[Status],
+            pagination: Dict[str, Any]
+    ) -> Optional[PaginationDriverCompanyDTO]: ...
 
     @abstractmethod
     async def get_by_id(self, driver_id: int, company_id: int) -> Optional[DriverCompanyDTO]: ...

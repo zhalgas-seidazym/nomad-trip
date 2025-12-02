@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 
 from fastapi import UploadFile
@@ -14,8 +14,8 @@ class DriverCompanyDTO(BaseDTOMixin):
     company_id: Optional[int] = None
     status: Optional[Status] = None
     rejection_reason: Optional[str] = None
-    created_at: Optional[date] = None
-    updated_at: Optional[date] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 @dataclass
 class DriverDTO(BaseDTOMixin):
@@ -29,15 +29,15 @@ class DriverDTO(BaseDTOMixin):
     license_expires_at: Optional[date] = None
     status: Optional[Status] = None
     rejection_reason: Optional[str] = None
-    created_at: Optional[date] = None
-    updated_at: Optional[date] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     id_photo_file: Optional[UploadFile] = None
     license_photo_file: Optional[UploadFile] = None
 
 @dataclass
-class PaginationDriverDTO(PaginationDTO):
+class PaginationDriverDTO(BaseDTOMixin, PaginationDTO):
     items: Optional[List[DriverDTO]] = None
 
 @dataclass
-class PaginationDriverCompanyDTO(PaginationDTO):
+class PaginationDriverCompanyDTO(BaseDTOMixin, PaginationDTO):
     items: Optional[List[DriverCompanyDTO]] = None

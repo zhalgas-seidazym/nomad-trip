@@ -1,10 +1,10 @@
 from datetime import datetime, timezone, timedelta
-from typing import Dict
+from typing import Dict, Optional
 
 from fastapi import HTTPException, status
 
 from src.application.companies.interfaces import ICompanyRepository
-from src.application.drivers.dtos import DriverDTO, DriverCompanyDTO
+from src.application.drivers.dtos import DriverDTO, DriverCompanyDTO, PaginationDriverCompanyDTO
 from src.application.drivers.interfaces import IDriverController, IDriverRepository, IDriverCompanyRepository
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserRepository
@@ -177,6 +177,19 @@ class DriverController(IDriverController):
             "detail": "Application added successfully",
         }
 
+    async def get_applications(self, user: UserDTO, application_status: Optional[Status], pagination: PaginationDriverCompanyDTO) -> Dict:
+        driver = await self._driver_repository.get_by_user_id(user.id)
+
+        if not driver:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+
+        response = await self._driver_company_repository.get(
+            driver_id=driver.id,
+            application_status=application_status,
+            pagination=pagination.to_payload(exclude_none=True),
+        )
+
+        return response.to_payload(exclude_none=True)
 
 
 
