@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, UploadFile, File
+from fastapi import APIRouter, status, Depends, UploadFile, File, Body
 from watchfiles import awatch
 
 from src.application.drivers.dtos import DriverDTO
@@ -31,6 +31,7 @@ admin_router = APIRouter(
                 "application/json": {
                     "example": {
                         "detail": "Driver profile created successfully, please wait until confirmation",
+                        "driver_id": 1
                     }
                 }
             }
@@ -73,6 +74,34 @@ async def get_my_driver_profile(
         user: UserDTO = Depends(is_driver),
 ):
     return await controller.get_my_driver_profile(user_id=user.id)
+
+@router.post(
+    '/application',
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "Application created successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Application created successfully, please wait until confirmation",
+                    }
+                }
+            }
+        },
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        status.HTTP_409_CONFLICT: RESPONSE_409,
+    }
+)
+async def add_application(
+        controller: Annotated[IDriverController, Depends(get_driver_controller)],
+        company_id: int = Body(),
+        user: UserDTO = Depends(is_driver),
+):
+    return await controller.add_application(user, company_id)
+
 
 @router.get(
     '/{driver_id}',

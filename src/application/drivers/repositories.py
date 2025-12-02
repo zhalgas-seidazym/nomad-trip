@@ -73,6 +73,15 @@ class DriverCompanyRepository(IDriverCompanyRepository):
         self._session = session
         self._uow = uow
 
+    async def get_by_id(self, driver_id: int, company_id: int) -> Optional[DriverCompanyDTO]:
+        query = select(driver_company_table).where(
+            driver_company_table.c.driver_id == driver_id,
+            driver_company_table.c.company_id == company_id
+        )
+        result = await self._session.execute(query)
+        orm = result.scalar_one_or_none()
+        return DriverCompanyDTO().to_application(orm) if orm else None
+
     async def get(
             self,
             driver_id: Optional[int],
