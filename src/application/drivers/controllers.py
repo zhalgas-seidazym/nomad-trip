@@ -11,7 +11,7 @@ from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserRepository
 from src.domain.enums import UserRoles, Status
 from src.domain.interfaces import IStorageService
-from src.domain.value_objects import ALLOWED_IMAGE_TYPES
+from src.domain.value_objects import ALLOWED_IMAGE_TYPES, ALLOWED_STATUS_TRANSITIONS
 
 
 class DriverController(IDriverController):
@@ -204,3 +204,21 @@ class AdminDriverController(IAdminDriverController):
         result = await self._driver_repository.get(status, pagination.to_payload(exclude_none=True))
 
         return result.to_payload(exclude_none=True)
+
+    async def update_driver_profile_status(self, driver_data: DriverDTO) -> Dict:
+        driver = await self._driver_repository.get_by_id(driver_data.id)
+
+        if not driver:
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+
+        if not driver_data.status in ALLOWED_STATUS_TRANSITIONS.get(driver.status):
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Cannot change status from {driver.status} to {driver_data.status}")
+
+        if driver_data.status == Status.REJECTED and not driver_data.rejection_reason:
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail="Cannot status to rejected without rejection reason")
+
+        await self._driver_repository.update(driver_id=driver.id, driver_data=driver.to_payload(exclude_none=True))
+
+        return {
+            "detail": "Driver profile status updated successfully",
+        }

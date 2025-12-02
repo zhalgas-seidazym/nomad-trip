@@ -9,7 +9,7 @@ from src.domain.base_schema import PaginationSchema
 from src.domain.enums import Status
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_driver_controller, get_admin_driver_controller
-from src.presentation.v1.depends.security import is_driver, get_current_user
+from src.presentation.v1.depends.security import is_driver, get_current_user, is_admin
 from src.presentation.v1.schemas.driver_schema import CreateDriverSchema, DriverSchema, UpdateDriverSchema, \
     PaginationDriverCompanySchema, PaginationDriverSchema
 
@@ -201,5 +201,34 @@ async def get_driver_profiles(
         controller: Annotated[IAdminDriverController, get_admin_driver_controller],
         status: Optional[Status] = Query(None),
         pagination: PaginationDriverSchema = Depends(PaginationSchema.as_query()),
+        user: UserDTO = Depends(is_admin)
 ):
     return await controller.get_driver_profiles(status, PaginationDriverDTO(**pagination.dict()))
+
+@admin_router.post(
+    '/{driver_id}',
+    status_code=s.HTTP_200_OK,
+    responses={
+        s.HTTP_200_OK: {
+            "description": "Driver profile status updated successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Driver profile status updated successfully",
+                    }
+                }
+            }
+        },
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def update_driver_profile_status(
+        driver_id: int,
+        controller: Annotated[IAdminDriverController, Depends(get_admin_driver_controller)],
+        user: UserDTO = Depends(is_admin),
+        status: Status = Body(),
+        rejection_reason: Optional[str] = Body(None),
+):
+    return await controller.update_driver_profile_status(driver_data=DriverDTO(id=driver_id, status=status, rejection_reason=rejection_reason))

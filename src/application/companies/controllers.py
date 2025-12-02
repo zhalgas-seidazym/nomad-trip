@@ -124,10 +124,10 @@ class AdminCompanyController(IAdminCompanyController):
             raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Company not found")
 
         if not company_data.status in ALLOWED_STATUS_TRANSITIONS.get(company.status):
-            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Cannot change status from {company.status} to {company_data.status}")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Can not update status from {company.status} to {company_data.status}")
 
         if company_data.status == Status.REJECTED and not company_data.rejection_reason:
-            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail="Cannot status to rejected without rejection reason")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail="Can not update status to rejected without rejection reason")
 
         await self._company_repository.update(company_data.id, company_data.to_payload(exclude_none=True))
 
