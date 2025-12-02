@@ -20,6 +20,7 @@ driver_company_table = Table(
     Column("driver_id", Integer, ForeignKey("drivers.id", ondelete="CASCADE"), primary_key=True),
     Column("company_id", Integer, ForeignKey("companies.id", ondelete="CASCADE"), primary_key=True),
     Column("status", status_enum, nullable=False, default=Status.WAITING),
+    Column("rejection_reason", Text, nullable=True, default=None),
     Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
     Column("updated_at", DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
 )

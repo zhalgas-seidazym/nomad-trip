@@ -61,3 +61,20 @@ class DriverController(IDriverController):
 
         return driver_profile.to_payload(exclude_none=True)
 
+    async def get_driver_profile_by_id(self, user: UserDTO, driver_id: int) -> Dict:
+        driver_profile = await self._driver_repository.get_by_id(driver_id)
+
+        if not driver_profile:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+
+        if user.role == UserRoles.PASSENGER:
+            driver_profile.id_photo_url = None
+            driver_profile.license_photo_url = None
+
+        if user.role == UserRoles.COMPANY:
+            driver_profile.id_photo_url = None
+
+        return driver_profile.to_payload(exclude_none=True)
+
+
+

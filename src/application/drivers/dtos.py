@@ -13,6 +13,7 @@ class DriverCompanyDTO(BaseDTOMixin):
     driver_id: Optional[int] = None
     company_id: Optional[int] = None
     status: Optional[Status] = None
+    rejection_reason: Optional[str] = None
     created_at: Optional[date] = None
     updated_at: Optional[date] = None
 

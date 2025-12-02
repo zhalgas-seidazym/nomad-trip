@@ -62,6 +62,7 @@ async def create_driver_profile(
     status_code=status.HTTP_200_OK,
     response_model=DriverSchema,
     responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
         status.HTTP_403_FORBIDDEN: RESPONSE_403,
         status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
@@ -71,3 +72,19 @@ async def get_my_driver_profile(
         user: UserDTO = Depends(is_driver),
 ):
     return await controller.get_my_driver_profile(user_id=user.id)
+
+@router.get(
+    '/{driver_id}',
+    status_code=status.HTTP_200_OK,
+    response_model=DriverSchema,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def get_driver_profile_by_id(
+        driver_id: int,
+        controller: Annotated[IDriverController, Depends(get_driver_controller)],
+        user: UserDTO = Depends(get_current_user),
+):
+    return await controller.get_driver_profile_by_id(user=user, driver_id=driver_id)

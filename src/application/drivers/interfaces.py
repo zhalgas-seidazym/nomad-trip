@@ -6,7 +6,7 @@ from src.application.users.dtos import UserDTO
 from src.domain.enums import Status
 
 # TODO: update_driver_profile, get_driver_profile_by_id, delete_driver_profile, add_application, get_applications,
-# TODO: update_driver_status
+# TODO: update_driver_status, get_drivers_by_status
 
 class IDriverController(ABC):
     @abstractmethod
@@ -14,6 +14,9 @@ class IDriverController(ABC):
 
     @abstractmethod
     async def get_my_driver_profile(self, user_id: int)-> Dict: ...
+
+    @abstractmethod
+    async def get_driver_profile_by_id(self, user: UserDTO, driver_id: int)-> Dict: ...
 
 class IDriverRepository(ABC):
     @abstractmethod
