@@ -29,11 +29,10 @@ class DriverDTO(BaseDTOMixin):
     license_expires_at: Optional[date] = None
     status: Optional[Status] = None
     rejection_reason: Optional[str] = None
-    applications: Optional[List[DriverCompanyDTO]] = None
     created_at: Optional[date] = None
     updated_at: Optional[date] = None
     id_photo_file: Optional[UploadFile] = None
-    licence_photo_file: Optional[UploadFile] = None
+    license_photo_file: Optional[UploadFile] = None
 
 @dataclass
 class PaginationDriverDTO(PaginationDTO):

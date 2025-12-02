@@ -32,6 +32,6 @@ class PaginationCompanySchema(PaginationSchema):
     items: Optional[List[CompanySchema]] = None
 
 class UpdateCompanySchema(BaseSchema):
-    name: str
-    description: str
-    address: str
+    name: Optional[str] = None
+    description: Optional[str] = None
+    address: Optional[str] = None

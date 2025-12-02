@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, status, Depends, UploadFile, File
+from watchfiles import awatch
 
 from src.application.drivers.dtos import DriverDTO
 from src.application.drivers.interfaces import IDriverController
@@ -8,7 +9,7 @@ from src.application.users.dtos import UserDTO
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_driver_controller
 from src.presentation.v1.depends.security import is_driver, get_current_user
-from src.presentation.v1.schemas.driver_schema import CreateDriverSchema, DriverSchema
+from src.presentation.v1.schemas.driver_schema import CreateDriverSchema, DriverSchema, UpdateDriverSchema
 
 router = APIRouter(
     prefix="/driver",
@@ -42,7 +43,7 @@ admin_router = APIRouter(
 )
 async def create_driver_profile(
         controller: Annotated[IDriverController, Depends(get_driver_controller)],
-        licence_photo_file: UploadFile = File(),
+        license_photo_file: UploadFile = File(),
         id_photo_file: UploadFile = File(),
         body: CreateDriverSchema = Depends(CreateDriverSchema.as_form()),
         user: UserDTO = Depends(get_current_user),
@@ -53,7 +54,7 @@ async def create_driver_profile(
             **body.dict(),
             user_id=user.id,
             id_photo_file=id_photo_file,
-            licence_photo_file=licence_photo_file
+            license_photo_file=license_photo_file
         )
     )
 
@@ -88,3 +89,27 @@ async def get_driver_profile_by_id(
         user: UserDTO = Depends(get_current_user),
 ):
     return await controller.get_driver_profile_by_id(user=user, driver_id=driver_id)
+
+@router.put(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=DriverSchema,
+    responses={
+        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def update_driver_profile(
+        controller: Annotated[IDriverController, Depends(get_driver_controller)],
+        license_photo_file: UploadFile = File(None),
+        id_photo_file: UploadFile = File(None),
+        body: UpdateDriverSchema = Depends(UpdateDriverSchema.as_form()),
+        user: UserDTO = Depends(is_driver),
+):
+    return await controller.update_driver_profile(user, DriverDTO(
+        **body.dict(),
+        license_photo_file=license_photo_file,
+        id_photo_file=id_photo_file
+    ))

@@ -6,7 +6,7 @@ from src.application.drivers.dtos import DriverDTO
 from src.application.drivers.interfaces import IDriverController, IDriverRepository, IDriverCompanyRepository
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserRepository
-from src.domain.enums import UserRoles
+from src.domain.enums import UserRoles, Status
 from src.domain.interfaces import IStorageService
 from src.domain.value_objects import ALLOWED_IMAGE_TYPES
 
@@ -40,8 +40,8 @@ class DriverController(IDriverController):
         driver_data.id_photo_url = id_photo_url
         driver_data.id_photo_file = None
 
-        licence = await self._storage_service.upload_file(driver_data.licence_photo_file, 'ids')
-        driver_data.licence = licence
+        license_photo_url = await self._storage_service.upload_file(driver_data.license_photo_file, 'licenses')
+        driver_data.license_photo_url = license_photo_url
         driver_data.licence_photo_file = None
 
         created = await self._driver_repository.add(driver_data.to_payload(exclude_none=True))
@@ -75,6 +75,37 @@ class DriverController(IDriverController):
             driver_profile.id_photo_url = None
 
         return driver_profile.to_payload(exclude_none=True)
+
+    async def update_driver_profile(self, user: UserDTO, driver_data: DriverDTO) -> Dict:
+        driver_profile = await self._driver_repository.get_by_user_id(user.id)
+
+        if not driver_profile:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+
+        if driver_data.id_photo_file:
+            if driver_data.id_photo_file.content_type not in ALLOWED_IMAGE_TYPES:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+            id_photo_url = await self._storage_service.upload_file(driver_data.id_photo_file, 'ids')
+            driver_data.id_photo_url = id_photo_url
+            driver_data.id_photo_file = None
+
+            await self._storage_service.delete_file(driver_profile.id_photo_url)
+
+        if driver_data.license_photo_file:
+            if driver_data.license_photo_file.content_type not in ALLOWED_IMAGE_TYPES:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+            license_photo_url = await self._storage_service.upload_file(driver_data.license_photo_file, 'ids')
+            driver_data.license_photo_url = license_photo_url
+            driver_data.license_photo_file = None
+
+            await self._storage_service.delete_file(driver_profile.license_photo_url)
+
+
+        driver_data.status = Status.WAITING
+
+        updated = await self._driver_repository.update(driver_profile.id, driver_data.to_payload(exclude_none=True))
+
+        return updated.to_payload(exclude_none=True)
 
 
 
