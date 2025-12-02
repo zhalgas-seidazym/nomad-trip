@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
-from src.application.drivers.dtos import PaginationDriverCompanyDTO
+from src.application.drivers.dtos import PaginationDriverCompanyDTO, DriverCompanyDTO
 from src.application.users.dtos import UserDTO
 from src.domain.enums import Status
 
@@ -29,6 +29,9 @@ class ICompanyController(ABC):
 
     @abstractmethod
     async def get_applications(self, user: UserDTO, status: Optional[Status], pagination: PaginationDriverCompanyDTO) -> Dict: ...
+
+    @abstractmethod
+    async def update_application_status(self, user: UserDTO, driver_company_data: DriverCompanyDTO) -> Dict: ...
 
 class IAdminCompanyController(ABC):
     @abstractmethod

@@ -4,8 +4,8 @@ from fastapi import HTTPException, status as s
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, ICompanyRepository, IAdminCompanyController
-from src.application.drivers.dtos import PaginationDriverCompanyDTO
-from src.application.drivers.interfaces import IDriverCompanyRepository
+from src.application.drivers.dtos import PaginationDriverCompanyDTO, DriverCompanyDTO
+from src.application.drivers.interfaces import IDriverCompanyRepository, IDriverRepository
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserRepository
 from src.domain.enums import UserRoles, Status
@@ -18,11 +18,13 @@ class CompanyController(ICompanyController):
             self,
             company_repository: ICompanyRepository,
             driver_company_repository: IDriverCompanyRepository,
+            driver_repository: IDriverRepository,
             user_repository: IUserRepository,
             storage_service: IStorageService,
     ):
         self._company_repository = company_repository
         self._user_repository = user_repository
+        self._driver_repository = driver_repository
         self._driver_company_repository = driver_company_repository
         self._storage_service = storage_service
 
@@ -127,6 +129,35 @@ class CompanyController(ICompanyController):
         )
 
         return response.to_payload(exclude_none=True)
+
+    async def update_application_status(self, user: UserDTO, driver_company_data: DriverCompanyDTO) -> Dict:
+        company = await self._company_repository.get_by_user_id(user.id)
+
+        if not company:
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Company not found")
+
+        driver = await self._driver_repository.get_by_id(driver_company_data.driver_id)
+
+        if not driver:
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+
+        application = await self._driver_company_repository.get_by_id(driver_id=driver.id, company_id=company.id)
+
+        if not application:
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Drivers application for this company not found")
+
+        if not driver_company_data.status in ALLOWED_STATUS_TRANSITIONS.get(application.status):
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Can not update status from {application.status} to {driver_company_data.status}")
+
+        if driver_company_data.status == Status.REJECTED and not driver_company_data.rejection_reason:
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail="Can not update status to rejected without rejection reason")
+
+        await self._driver_company_repository.update(driver_id=driver.id, company_id=company.id, driver_company_data=driver_company_data.to_payload(exclude_none=True))
+
+        return {
+            "detail": "Application status updated successfully",
+        }
+
 
 
 

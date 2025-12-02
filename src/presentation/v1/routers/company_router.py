@@ -4,7 +4,7 @@ from fastapi import APIRouter, status as s, Depends, UploadFile, File, Query, Bo
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, IAdminCompanyController
-from src.application.drivers.dtos import PaginationDriverCompanyDTO
+from src.application.drivers.dtos import PaginationDriverCompanyDTO, DriverCompanyDTO
 from src.application.users.dtos import UserDTO
 from src.domain.base_schema import PaginationSchema
 from src.domain.enums import Status
@@ -101,6 +101,38 @@ async def get_company_applications(
         status: Optional[Status] = Query(None),
 ):
     return await controller.get_applications(user=user, status=status, pagination=PaginationDriverCompanyDTO(**pagination.dict()))
+
+@router.patch(
+    '/application/{driver_id}',
+    status_code=s.HTTP_200_OK,
+    responses={
+        s.HTTP_200_OK: {
+            "description": "Application status updated successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Application status updated successfully",
+                    }
+                }
+            }
+        },
+        s.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def update_application_status(
+        driver_id: int,
+        controller: Annotated[ICompanyController, get_company_controller],
+        user: UserDTO = Depends(is_company),
+        status: Status = Body(),
+        rejection_reason: Optional[str] = Body(None),
+):
+    return await controller.update_application_status(
+        user=user,
+        driver_company_data=DriverCompanyDTO(status=status, rejection_reason=rejection_reason, driver_id=driver_id)
+    )
 
 @router.get(
     '/{company_id}',
