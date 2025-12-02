@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, status, Depends, UploadFile, File, Query, Body
+from fastapi import APIRouter, status as s, Depends, UploadFile, File, Query, Body
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, IAdminCompanyController
@@ -24,9 +24,9 @@ admin_router = APIRouter(
 
 @router.post(
     '',
-    status_code=status.HTTP_201_CREATED,
+    status_code=s.HTTP_201_CREATED,
     responses={
-        status.HTTP_201_CREATED: {
+        s.HTTP_201_CREATED: {
             "description": "Company created successfully",
             "content": {
                 "application/json": {
@@ -36,9 +36,9 @@ admin_router = APIRouter(
                 }
             }
         },
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
-        status.HTTP_409_CONFLICT: RESPONSE_409
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        s.HTTP_409_CONFLICT: RESPONSE_409
     }
 )
 async def create_company(
@@ -51,12 +51,12 @@ async def create_company(
 
 @router.get(
     '',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=CompanySchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def get_my_company(
@@ -67,28 +67,28 @@ async def get_my_company(
 
 @router.get(
     '/search',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=PaginationCompanySchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     }
 )
 async def search_companies(
         controller: Annotated[ICompanyController, Depends(get_company_controller)],
         user: UserDTO = Depends(get_current_user),
         query: str = Query(''),
-        company_status: Optional[Status] = Query(None),
+        status: Optional[Status] = Query(None),
         pagination: PaginationCompanySchema = Depends(PaginationSchema.as_query()),
 ):
-    return await controller.search_companies(user=user, text=query, company_status=company_status, pagination=PaginationCompanyDTO(**pagination.dict()))
+    return await controller.search_companies(user=user, text=query, status=status, pagination=PaginationCompanyDTO(**pagination.dict()))
 
 @router.get(
     '/{company_id}',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=CompanySchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def get_company_by_id(
@@ -100,12 +100,12 @@ async def get_company_by_id(
 
 @router.put(
     '',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=CompanySchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def update_company(
@@ -118,9 +118,9 @@ async def update_company(
 
 @router.delete(
     '',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {
+        s.HTTP_200_OK: {
             "description": "Company deleted successfully",
             "content": {
                 "application/json": {
@@ -130,9 +130,9 @@ async def update_company(
                 }
             }
         },
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def delete_company(
@@ -143,9 +143,9 @@ async def delete_company(
 
 @admin_router.patch(
     '/{company_id}',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {
+        s.HTTP_200_OK: {
             "description": "Company status updated successfully",
             "content": {
                 "application/json": {
@@ -155,10 +155,10 @@ async def delete_company(
                 }
             }
         },
-        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def update_company_status(

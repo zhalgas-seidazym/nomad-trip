@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status as s
 from sqlalchemy import select, insert, update, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,14 +28,19 @@ class DriverRepository(IDriverRepository):
         orm = result.scalar_one_or_none()
         return DriverDTO().to_application(orm) if orm else None
 
-    async def get_by_status(self, status: Status, pagination: Dict[str, Any]) -> Optional[PaginationDriverDTO]:
+    async def get(self, status: Optional[Status], pagination: Dict[str, Any]) -> PaginationDriverDTO:
         page = pagination.get("page", 1)
         per_page = pagination.get("per_page", 10)
 
-        count_query = select(func.count(Driver.id)).where(Driver.status == status)
+        conditions = []
+
+        if status:
+            conditions.append(Driver.status == status.value)
+
+        count_query = select(func.count()).select_from(Driver).where(**conditions)
         total = (await self._session.execute(count_query)).scalar_one()
 
-        query = select(Driver).where(Driver.status == status).offset((page - 1) * per_page).limit(per_page)
+        query = select(Driver).where(**conditions).offset((page - 1) * per_page).limit(per_page)
         result = await self._session.execute(query)
         orm_list = result.scalars().all()
 
@@ -86,7 +91,7 @@ class DriverCompanyRepository(IDriverCompanyRepository):
             self,
             driver_id: Optional[int],
             company_id: Optional[int],
-            application_status: Optional[Status],
+            status: Optional[Status],
             pagination: Dict[str, Any]
     ) -> PaginationDriverCompanyDTO:
 
@@ -102,10 +107,10 @@ class DriverCompanyRepository(IDriverCompanyRepository):
             conditions.append(driver_company_table.c.company_id == company_id)
 
         if not conditions:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail="Invalid request")
 
-        if application_status:
-            conditions.append(driver_company_table.c.status == application_status)
+        if status:
+            conditions.append(driver_company_table.c.status == status.value)
 
         count_stmt = (
             select(func.count())

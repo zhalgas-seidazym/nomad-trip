@@ -1,11 +1,12 @@
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Optional
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status as s
 
 from src.application.companies.interfaces import ICompanyRepository
-from src.application.drivers.dtos import DriverDTO, DriverCompanyDTO, PaginationDriverCompanyDTO
-from src.application.drivers.interfaces import IDriverController, IDriverRepository, IDriverCompanyRepository
+from src.application.drivers.dtos import DriverDTO, DriverCompanyDTO, PaginationDriverCompanyDTO, PaginationDriverDTO
+from src.application.drivers.interfaces import IDriverController, IDriverRepository, IDriverCompanyRepository, \
+    IAdminDriverController
 from src.application.users.dtos import UserDTO
 from src.application.users.interfaces import IUserRepository
 from src.domain.enums import UserRoles, Status
@@ -30,15 +31,15 @@ class DriverController(IDriverController):
 
     async def create_driver_profile(self, driver_data: DriverDTO, user: UserDTO) -> Dict:
         if not user.role == UserRoles.PASSENGER:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="To create a driver profile you must to be passenger")
+            raise HTTPException(status_code=s.HTTP_403_FORBIDDEN, detail="To create a driver profile you must to be passenger")
 
         driver = await self._driver_repository.get_by_user_id(user.id)
 
         if driver:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Driver profile already exists")
+            raise HTTPException(status_code=s.HTTP_409_CONFLICT, detail="Driver profile already exists")
 
         if driver_data.id_photo_file.content_type not in ALLOWED_IMAGE_TYPES or driver_data.licence_photo_file.content_type not in ALLOWED_IMAGE_TYPES:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
 
         id_photo_url = await self._storage_service.upload_file(driver_data.id_photo_file, 'ids')
         driver_data.id_photo_url = id_photo_url
@@ -61,7 +62,7 @@ class DriverController(IDriverController):
         driver_profile = await self._driver_repository.get_by_user_id(user_id)
 
         if not driver_profile:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
 
         return driver_profile.to_payload(exclude_none=True)
 
@@ -69,7 +70,7 @@ class DriverController(IDriverController):
         driver_profile = await self._driver_repository.get_by_id(driver_id)
 
         if not driver_profile:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
 
         if user.role == UserRoles.PASSENGER:
             driver_profile.id_photo_url = None
@@ -84,11 +85,11 @@ class DriverController(IDriverController):
         driver_profile = await self._driver_repository.get_by_user_id(user.id)
 
         if not driver_profile:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
 
         if driver_data.id_photo_file:
             if driver_data.id_photo_file.content_type not in ALLOWED_IMAGE_TYPES:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+                raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
             id_photo_url = await self._storage_service.upload_file(driver_data.id_photo_file, 'ids')
             driver_data.id_photo_url = id_photo_url
             driver_data.id_photo_file = None
@@ -97,7 +98,7 @@ class DriverController(IDriverController):
 
         if driver_data.license_photo_file:
             if driver_data.license_photo_file.content_type not in ALLOWED_IMAGE_TYPES:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+                raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
             license_photo_url = await self._storage_service.upload_file(driver_data.license_photo_file, 'ids')
             driver_data.license_photo_url = license_photo_url
             driver_data.license_photo_file = None
@@ -115,7 +116,7 @@ class DriverController(IDriverController):
         driver_profile = await self._driver_repository.get_by_user_id(user.id)
 
         if not driver_profile:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
 
         await self._storage_service.delete_files([driver_profile.id_photo_url, driver_profile.license_photo_url])
 
@@ -131,12 +132,12 @@ class DriverController(IDriverController):
         driver = await self._driver_repository.get_by_user_id(user.id)
 
         if not driver:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
 
         company = await self._company_repository.get_by_id(company_id)
 
         if not company:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Company not found")
 
         application = await self._driver_company_repository.get_by_id(driver_id=driver.id, company_id=company_id)
 
@@ -151,7 +152,7 @@ class DriverController(IDriverController):
                 minutes, _ = divmod(remainder, 60)
 
                 raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
+                    status_code=s.HTTP_409_CONFLICT,
                     detail=f"You already applied to this company, try again in {days} days, {hours} hours, {minutes} minutes"
                 )
 
@@ -177,19 +178,29 @@ class DriverController(IDriverController):
             "detail": "Application added successfully",
         }
 
-    async def get_applications(self, user: UserDTO, application_status: Optional[Status], pagination: PaginationDriverCompanyDTO) -> Dict:
+    async def get_applications(self, user: UserDTO, status: Optional[Status], pagination: PaginationDriverCompanyDTO) -> Dict:
         driver = await self._driver_repository.get_by_user_id(user.id)
 
         if not driver:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Driver profile not found")
 
         response = await self._driver_company_repository.get(
             driver_id=driver.id,
-            application_status=application_status,
+            status=status,
             pagination=pagination.to_payload(exclude_none=True),
         )
 
         return response.to_payload(exclude_none=True)
 
 
+class AdminDriverController(IAdminDriverController):
+    def __init__(
+            self,
+            driver_repository: IDriverRepository,
+    ):
+        self._driver_repository = driver_repository
 
+    async def get_driver_profiles(self, status: Optional[Status], pagination: PaginationDriverDTO) -> Dict:
+        result = await self._driver_repository.get(status, pagination.to_payload(exclude_none=True))
+
+        return result.to_payload(exclude_none=True)

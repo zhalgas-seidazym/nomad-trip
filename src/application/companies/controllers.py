@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status as s
 
 from src.application.companies.dtos import CompanyDTO, PaginationCompanyDTO
 from src.application.companies.interfaces import ICompanyController, ICompanyRepository, IAdminCompanyController
@@ -24,14 +24,14 @@ class CompanyController(ICompanyController):
 
     async def create_company(self, user: UserDTO, company_data: CompanyDTO) -> Dict:
         if not user.role == UserRoles.PASSENGER:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User is not a PASSENGER. To change your role you should be passenger")
+            raise HTTPException(status_code=s.HTTP_409_CONFLICT, detail="User is not a PASSENGER. To change your role you should be passenger")
 
         exists = await self._company_repository.get_by_user_id(company_data.owner_id)
         if exists:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already have a company")
+            raise HTTPException(status_code=s.HTTP_409_CONFLICT, detail="User already have a company")
 
         if company_data.logo_file.content_type not in ALLOWED_IMAGE_TYPES:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
         logo_url = await self._storage_service.upload_file(company_data.logo_file, 'logos')
         company_data.logo_url = logo_url
         company_data.logo_file = None
@@ -49,17 +49,17 @@ class CompanyController(ICompanyController):
         company = await self._company_repository.get_by_user_id(user_id)
 
         if not company:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not have a company")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="User does not have a company")
 
         return company.to_payload(exclude_none=True)
 
-    async def search_companies(self, user: UserDTO, text: str, company_status: Optional[Status], pagination: PaginationCompanyDTO) -> Dict:
+    async def search_companies(self, user: UserDTO, text: str, status: Optional[Status], pagination: PaginationCompanyDTO) -> Dict:
         if not user.role == UserRoles.ADMIN:
-            company_status = Status.APPROVED
+            status = Status.APPROVED
 
         pagination_dto = await self._company_repository.get_by_query_and_status(
             text=text,
-            status=company_status,
+            status=status,
             pagination=pagination.to_payload(),
         )
 
@@ -69,7 +69,7 @@ class CompanyController(ICompanyController):
         company = await self._company_repository.get_by_id(company_id)
 
         if not company:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Company not found")
 
         return company.to_payload(exclude_none=True)
 
@@ -77,11 +77,11 @@ class CompanyController(ICompanyController):
         company = await self._company_repository.get_by_user_id(user.id)
 
         if not company:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not have a company registered")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="User does not have a company registered")
 
         if company_data.logo_file:
             if company_data.logo_file.content_type not in ALLOWED_IMAGE_TYPES:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+                raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
             logo_url = await self._storage_service.upload_file(company_data.logo_file, 'logos')
             company_data.logo_url = logo_url
             company_data.logo_file = None
@@ -98,7 +98,7 @@ class CompanyController(ICompanyController):
         company = await self._company_repository.get_by_user_id(user.id)
 
         if not company:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Company not found")
 
         await self._storage_service.delete_file(company.logo_url)
 
@@ -121,13 +121,13 @@ class AdminCompanyController(IAdminCompanyController):
         company = await self._company_repository.get_by_id(company_data.id)
 
         if not company:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail="Company not found")
 
         if not company_data.status in ALLOWED_STATUS_TRANSITIONS.get(company.status):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Cannot change status from {company.status} to {company_data.status}")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Cannot change status from {company.status} to {company_data.status}")
 
         if company_data.status == Status.REJECTED and not company_data.rejection_reason:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot status to rejected without rejection reason")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail="Cannot status to rejected without rejection reason")
 
         await self._company_repository.update(company_data.id, company_data.to_payload(exclude_none=True))
 

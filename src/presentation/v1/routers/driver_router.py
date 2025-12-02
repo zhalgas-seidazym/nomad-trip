@@ -1,17 +1,17 @@
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, status, Depends, UploadFile, File, Body, Query
+from fastapi import APIRouter, status as s, Depends, UploadFile, File, Body, Query
 
-from src.application.drivers.dtos import DriverDTO, PaginationDriverCompanyDTO
-from src.application.drivers.interfaces import IDriverController
+from src.application.drivers.dtos import DriverDTO, PaginationDriverCompanyDTO, PaginationDriverDTO
+from src.application.drivers.interfaces import IDriverController, IAdminDriverController
 from src.application.users.dtos import UserDTO
 from src.domain.base_schema import PaginationSchema
 from src.domain.enums import Status
 from src.domain.responses import *
-from src.presentation.v1.depends.controllers import get_driver_controller
+from src.presentation.v1.depends.controllers import get_driver_controller, get_admin_driver_controller
 from src.presentation.v1.depends.security import is_driver, get_current_user
 from src.presentation.v1.schemas.driver_schema import CreateDriverSchema, DriverSchema, UpdateDriverSchema, \
-    PaginationDriverCompanySchema
+    PaginationDriverCompanySchema, PaginationDriverSchema
 
 router = APIRouter(
     prefix="/driver",
@@ -25,9 +25,9 @@ admin_router = APIRouter(
 
 @router.post(
     '',
-    status_code=status.HTTP_201_CREATED,
+    status_code=s.HTTP_201_CREATED,
     responses={
-        status.HTTP_201_CREATED: {
+        s.HTTP_201_CREATED: {
             "description": "Driver profile created successfully",
             "content": {
                 "application/json": {
@@ -38,10 +38,10 @@ admin_router = APIRouter(
                 }
             }
         },
-        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_409_CONFLICT: RESPONSE_409,
+        s.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_409_CONFLICT: RESPONSE_409,
     }
 )
 async def create_driver_profile(
@@ -63,12 +63,12 @@ async def create_driver_profile(
 
 @router.get(
     '',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=DriverSchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def get_my_driver_profile(
@@ -79,9 +79,9 @@ async def get_my_driver_profile(
 
 @router.post(
     '/application',
-    status_code=status.HTTP_201_CREATED,
+    status_code=s.HTTP_201_CREATED,
     responses={
-        status.HTTP_201_CREATED: {
+        s.HTTP_201_CREATED: {
             "description": "Application created successfully",
             "content": {
                 "application/json": {
@@ -91,10 +91,10 @@ async def get_my_driver_profile(
                 }
             }
         },
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
-        status.HTTP_409_CONFLICT: RESPONSE_409,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_409_CONFLICT: RESPONSE_409,
     }
 )
 async def add_application(
@@ -106,30 +106,30 @@ async def add_application(
 
 @router.get(
     '/application',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=PaginationDriverCompanySchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def get_my_applications(
         controller: Annotated[IDriverController, Depends(get_driver_controller)],
-        application_status: Optional[Status] = Query(None),
+        status: Optional[Status] = Query(None),
         pagination: PaginationDriverCompanySchema = Depends(PaginationSchema.as_query()),
         user: UserDTO = Depends(is_driver),
 ):
-    return await controller.get_applications(user=user, application_status=application_status, pagination=PaginationDriverCompanyDTO(**pagination.dict()))
+    return await controller.get_applications(user=user, status=status, pagination=PaginationDriverCompanyDTO(**pagination.dict()))
 
 
 @router.get(
     '/{driver_id}',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=DriverSchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def get_driver_profile_by_id(
@@ -141,13 +141,13 @@ async def get_driver_profile_by_id(
 
 @router.put(
     '',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=DriverSchema,
     responses={
-        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def update_driver_profile(
@@ -165,9 +165,9 @@ async def update_driver_profile(
 
 @router.delete(
     '',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {
+        s.HTTP_200_OK: {
             "description": "Driver profile deleted successfully",
             "content": {
                 "application/json": {
@@ -177,9 +177,9 @@ async def update_driver_profile(
                 }
             }
         },
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def delete_my_driver_profile(
@@ -187,3 +187,19 @@ async def delete_my_driver_profile(
         user: UserDTO = Depends(is_driver),
 ):
     return await controller.delete_my_driver_profile(user=user)
+
+@admin_router.get(
+    '',
+    status_code=s.HTTP_200_OK,
+    response_model=PaginationDriverSchema,
+    responses={
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+    }
+)
+async def get_driver_profiles(
+        controller: Annotated[IAdminDriverController, get_admin_driver_controller],
+        status: Optional[Status] = Query(None),
+        pagination: PaginationDriverSchema = Depends(PaginationSchema.as_query()),
+):
+    return await controller.get_driver_profiles(status, PaginationDriverDTO(**pagination.dict()))

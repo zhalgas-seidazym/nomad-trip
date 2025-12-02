@@ -4,8 +4,9 @@ from fastapi import Depends
 from src.app.container import Container
 from src.application.companies.controllers import CompanyController, AdminCompanyController
 from src.application.companies.interfaces import ICompanyRepository, ICompanyController, IAdminCompanyController
-from src.application.drivers.controllers import DriverController
-from src.application.drivers.interfaces import IDriverRepository, IDriverCompanyRepository, IDriverController
+from src.application.drivers.controllers import DriverController, AdminDriverController
+from src.application.drivers.interfaces import IDriverRepository, IDriverCompanyRepository, IDriverController, \
+    IAdminDriverController
 from src.application.users.controllers import UserController
 from src.application.users.interfaces import IUserRepository, IUserController, IEmailOtpService
 from src.domain.interfaces import IJWTService, IHashService, IStorageService
@@ -48,6 +49,7 @@ async def get_admin_company_controller(
         company_repository=company_repository,
     )
 
+@inject
 async def get_driver_controller(
         driver_repository: IDriverRepository = Depends(get_driver_repository),
         driver_company_repository: IDriverCompanyRepository = Depends(get_driver_company_repository),
@@ -61,4 +63,11 @@ async def get_driver_controller(
         user_repository=user_repository,
         company_repository=company_repository,
         storage_service=storage_service,
+    )
+
+async def get_admin_driver_controller(
+        driver_repository: IDriverRepository = Depends(get_driver_repository),
+) -> IAdminDriverController:
+    return AdminDriverController(
+        driver_repository=driver_repository,
     )
