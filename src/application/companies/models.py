@@ -39,5 +39,6 @@ class Company(Base, TimestampMixin):
     drivers = relationship(
         "Driver",
         secondary=driver_company_table,
-        back_populates="companies"
+        back_populates="companies",
+        passive_deletes=True
     )

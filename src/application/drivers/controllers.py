@@ -107,5 +107,21 @@ class DriverController(IDriverController):
 
         return updated.to_payload(exclude_none=True)
 
+    async def delete_my_driver_profile(self, user: UserDTO) -> Dict:
+        driver_profile = await self._driver_repository.get_by_user_id(user.id)
+
+        if not driver_profile:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver profile not found")
+
+        await self._storage_service.delete_files([driver_profile.id_photo_url, driver_profile.license_photo_url])
+
+        await self._driver_repository.delete(driver_profile.id)
+
+        await self._user_repository.update(user_id=user.id, user_data={"role": UserRoles.PASSENGER})
+
+        return {
+            "detail": "Driver profile deleted successfully",
+        }
+
 
 

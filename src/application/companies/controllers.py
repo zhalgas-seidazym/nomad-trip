@@ -100,6 +100,8 @@ class CompanyController(ICompanyController):
         if not company:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
 
+        await self._storage_service.delete_file(company.logo_url)
+
         await self._company_repository.delete(company.id)
 
         await self._user_repository.update(user_id=user.id, user_data={"role": UserRoles.PASSENGER})

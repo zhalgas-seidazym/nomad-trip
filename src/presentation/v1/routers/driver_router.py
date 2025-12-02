@@ -113,3 +113,28 @@ async def update_driver_profile(
         license_photo_file=license_photo_file,
         id_photo_file=id_photo_file
     ))
+
+@router.delete(
+    '',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Driver profile deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Driver profile deleted successfully",
+                    }
+                }
+            }
+        },
+        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def delete_my_driver_profile(
+        controller: Annotated[IDriverController, Depends(get_driver_controller)],
+        user: UserDTO = Depends(is_driver),
+):
+    return await controller.delete_my_driver_profile(user=user)
