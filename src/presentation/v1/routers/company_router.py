@@ -9,7 +9,7 @@ from src.domain.base_schema import PaginationSchema
 from src.domain.enums import Status
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_company_controller, get_admin_company_controller
-from src.presentation.v1.depends.security import get_current_user, is_admin
+from src.presentation.v1.depends.security import get_current_user, is_admin, is_company
 from src.presentation.v1.schemas.company_schema import CreateCompanySchema, CompanySchema, PaginationCompanySchema, \
     UpdateCompanySchema
 
@@ -55,12 +55,13 @@ async def create_company(
     response_model=CompanySchema,
     responses={
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
         status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def get_my_company(
         controller: Annotated[ICompanyController, Depends(get_company_controller)],
-        user: UserDTO = Depends(get_current_user),
+        user: UserDTO = Depends(is_company),
 ):
     return await controller.get_my_company(user.id)
 
@@ -88,7 +89,6 @@ async def search_companies(
     responses={
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
         status.HTTP_404_NOT_FOUND: RESPONSE_404,
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
     }
 )
 async def get_company_by_id(
@@ -104,6 +104,7 @@ async def get_company_by_id(
     response_model=CompanySchema,
     responses={
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
         status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
@@ -111,7 +112,7 @@ async def update_company(
         controller: Annotated[ICompanyController, Depends(get_company_controller)],
         logo_file: UploadFile = File(None),
         body: UpdateCompanySchema = Depends(UpdateCompanySchema.as_form()),
-        user: UserDTO = Depends(get_current_user),
+        user: UserDTO = Depends(is_company),
 ):
     return await controller.update_company(user, CompanyDTO(**body.dict(), logo_file=logo_file))
 
@@ -130,12 +131,13 @@ async def update_company(
             }
         },
         status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
         status.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def delete_company(
         controller: Annotated[ICompanyController, Depends(get_company_controller)],
-        user: UserDTO = Depends(get_current_user),
+        user: UserDTO = Depends(is_company),
 ):
     return await controller.delete_company(user=user)
 

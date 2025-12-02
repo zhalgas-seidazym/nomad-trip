@@ -71,10 +71,6 @@ class CompanyController(ICompanyController):
         if not company:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
 
-        if not company.status == Status.APPROVED:
-            if not user.role == UserRoles.ADMIN and not user.id == company.owner_id:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
-
         return company.to_payload(exclude_none=True)
 
     async def update_company(self, user: UserDTO, company_data: CompanyDTO) -> Dict:

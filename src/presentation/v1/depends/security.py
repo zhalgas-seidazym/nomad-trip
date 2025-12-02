@@ -45,3 +45,23 @@ async def is_admin(
             detail="Admin access required"
         )
     return user
+
+async def is_company(
+        user = Depends(get_current_user)
+):
+    if user.role != UserRoles.COMPANY:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Company role required"
+        )
+    return user
+
+async def is_driver(
+        user = Depends(get_current_user)
+):
+    if user.role != UserRoles.DRIVER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Driver role required"
+        )
+    return user

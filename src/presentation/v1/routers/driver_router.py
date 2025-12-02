@@ -7,7 +7,8 @@ from src.application.drivers.interfaces import IDriverController
 from src.application.users.dtos import UserDTO
 from src.domain.responses import *
 from src.presentation.v1.depends.controllers import get_driver_controller
-from src.presentation.v1.schemas.driver_schema import CreateDriverSchema
+from src.presentation.v1.depends.security import is_driver, get_current_user
+from src.presentation.v1.schemas.driver_schema import CreateDriverSchema, DriverSchema
 
 router = APIRouter(
     prefix="/driver",
@@ -41,10 +42,10 @@ admin_router = APIRouter(
 )
 async def create_driver_profile(
         controller: Annotated[IDriverController, Depends(get_driver_controller)],
-        user: UserDTO = Depends(UserDTO),
-        id_photo_file: UploadFile = File(),
         licence_photo_file: UploadFile = File(),
+        id_photo_file: UploadFile = File(),
         body: CreateDriverSchema = Depends(CreateDriverSchema.as_form()),
+        user: UserDTO = Depends(get_current_user),
 ):
     return await controller.create_driver_profile(
         user=user,
@@ -55,3 +56,18 @@ async def create_driver_profile(
             licence_photo_file=licence_photo_file
         )
     )
+
+@router.get(
+    '',
+    status_code=status.HTTP_200_OK,
+    response_model=DriverSchema,
+    responses={
+        status.HTTP_403_FORBIDDEN: RESPONSE_403,
+        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+    }
+)
+async def get_my_driver_profile(
+        controller: Annotated[IDriverController, Depends(get_driver_controller)],
+        user: UserDTO = Depends(is_driver),
+):
+    return await controller.get_my_driver_profile(user_id=user.id)

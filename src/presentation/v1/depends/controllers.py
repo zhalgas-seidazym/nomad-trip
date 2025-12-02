@@ -51,10 +51,12 @@ async def get_admin_company_controller(
 async def get_driver_controller(
         driver_repository: IDriverRepository = Depends(get_driver_repository),
         driver_company_repository: IDriverCompanyRepository = Depends(get_driver_company_repository),
+        user_repository: IUserRepository = Depends(get_user_repository),
         storage_service: IStorageService = Depends(Provide[Container.minio_service]),
 ) -> IDriverController:
     return DriverController(
         driver_repository=driver_repository,
         driver_company_repository=driver_company_repository,
+        user_repository=user_repository,
         storage_service=storage_service,
     )
