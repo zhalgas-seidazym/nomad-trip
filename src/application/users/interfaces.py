@@ -5,7 +5,6 @@ from fastapi import Response
 
 from src.application.users.dtos import UserDTO
 
-# TODO: change_password
 
 class IUserController(ABC):
     @abstractmethod
@@ -22,6 +21,9 @@ class IUserController(ABC):
 
     @abstractmethod
     async def update(self, user: UserDTO, user_data: UserDTO) -> Dict: ...
+
+    @abstractmethod
+    async def change_password(self, user_data: UserDTO, code: str) -> Dict: ...
 
     @abstractmethod
     async def delete(self, user_id: int) -> Dict: ...
@@ -48,4 +50,4 @@ class IUserRepository(ABC):
 class IEmailOtpService(Protocol):
     async def send_otp(self, email: str) -> None: ...
 
-    async def verify_otp(self, email: str, code: str) -> bool: ...
+    async def verify_otp(self, email: str, code: str) -> None: ...

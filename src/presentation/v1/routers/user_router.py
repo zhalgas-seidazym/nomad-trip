@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, Response, UploadFile, File, Body
+from fastapi import APIRouter, status as s, Depends, Response, UploadFile, File, Body
 from pydantic import EmailStr
 
 from src.application.users.dtos import UserDTO
@@ -18,9 +18,9 @@ router = APIRouter(
 
 @router.post(
     "/send-otp",
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {
+        s.HTTP_200_OK: {
             "description": "OTP code sent",
             "content": {
                 "application/json": {
@@ -30,7 +30,7 @@ router = APIRouter(
                 }
             }
         },
-        status.HTTP_400_BAD_REQUEST: {
+        s.HTTP_400_BAD_REQUEST: {
             "description": "OTP was already sent and has not expired yet",
             "content": {
                 "application/json": {
@@ -50,9 +50,9 @@ async def send_otp(
 
 @router.post(
     '/verify-otp',
-    status_code=status.HTTP_201_CREATED,
+    status_code=s.HTTP_201_CREATED,
     responses={
-        status.HTTP_201_CREATED: {
+        s.HTTP_201_CREATED: {
             "description": "User created successfully",
             "content": {
                 "application/json": {
@@ -63,7 +63,7 @@ async def send_otp(
                 }
             }
         },
-        status.HTTP_400_BAD_REQUEST: {
+        s.HTTP_400_BAD_REQUEST: {
             "description": "Incorrect or expired otp code",
             "content": {
                 "application/json": {
@@ -84,11 +84,39 @@ async def verify_otp(
         user_data = UserDTO(**{k: v for k, v in body.dict().items() if k != "code"}), code=body.code, response=response
     )
 
+@router.patch(
+    '/verify-otp/change-password',
+    status_code=s.HTTP_200_OK,
+    responses={
+        s.HTTP_200_OK: {
+            "description": "Password changed successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Password changed successfully"
+                    }
+                }
+            }
+        },
+        s.HTTP_404_BAD_REQUEST: RESPONSE_404
+    }
+)
+async def change_password(
+        controller: Annotated[IUserController, Depends(get_user_controller)],
+        email: EmailStr = Body(),
+        new_password: str = Body(),
+        code: str = Body(),
+):
+    return await controller.change_password(UserDTO(
+        email=email,
+        new_password=new_password,
+    ), code)
+
 @router.post(
     '/login',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {
+        s.HTTP_200_OK: {
             "description": "Logged in successfully",
             "content": {
                 "application/json": {
@@ -98,8 +126,8 @@ async def verify_otp(
                 }
             }
         },
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
-        status.HTTP_400_BAD_REQUEST: {
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_400_BAD_REQUEST: {
             "description": "Incorrect credentials",
             "content": {
                 "application/json": {
@@ -120,10 +148,10 @@ async def login(
 
 @router.get(
     '/profile',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=UserSchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401
     }
 )
 async def my_profile(
@@ -134,11 +162,11 @@ async def my_profile(
 
 @router.get(
     '/profile/{user_id}',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=UserSchema,
     responses={
-        status.HTTP_403_FORBIDDEN: RESPONSE_403,
-        status.HTTP_404_NOT_FOUND: RESPONSE_404,
+        s.HTTP_403_FORBIDDEN: RESPONSE_403,
+        s.HTTP_404_NOT_FOUND: RESPONSE_404,
     }
 )
 async def profile_by_id(
@@ -149,11 +177,11 @@ async def profile_by_id(
 
 @router.put(
     '/profile',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     response_model=UserSchema,
     responses={
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
-        status.HTTP_400_BAD_REQUEST: RESPONSE_400,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_400_BAD_REQUEST: RESPONSE_400,
     }
 )
 async def update_profile(
@@ -166,9 +194,9 @@ async def update_profile(
 
 @router.delete(
     '',
-    status_code=status.HTTP_200_OK,
+    status_code=s.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {
+        s.HTTP_200_OK: {
             "description": "User deleted successfully",
             "content": {
                 "application/json": {
@@ -178,7 +206,7 @@ async def update_profile(
                 }
             }
         },
-        status.HTTP_401_UNAUTHORIZED: RESPONSE_401,
+        s.HTTP_401_UNAUTHORIZED: RESPONSE_401,
     }
 )
 async def delete_profile(
@@ -190,7 +218,7 @@ async def delete_profile(
 @router.post(
     '/refresh-token',
     responses={
-        status.HTTP_200_OK: {
+        s.HTTP_200_OK: {
             "description": "Token updated successfully",
             "content": {
                 "application/json": {
@@ -200,7 +228,7 @@ async def delete_profile(
                 }
             }
         },
-        status.HTTP_400_BAD_REQUEST: {
+        s.HTTP_400_BAD_REQUEST: {
             "description": "Refresh token is invalid",
             "content": {
                 "application/json": {

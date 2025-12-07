@@ -1,6 +1,6 @@
 from typing import Dict
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status as s
 from starlette.responses import Response
 
 from src.application.users.dtos import UserDTO
@@ -34,7 +34,7 @@ class UserController(IUserController):
     async def verify_otp(self, user_data: UserDTO, code: str, response: Response) -> Dict:
         user_check = await self._user_repository.get_by_email(user_data.email)
         if user_check:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with {user_data.email} already exists")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"User with {user_data.email} already exists")
 
         await self._email_otp_service.verify_otp(user_data.email, code)
 
@@ -53,7 +53,7 @@ class UserController(IUserController):
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
 
         return {
-            "details": "OTP verified and user created successfully",
+            "detail": "OTP verified and user created successfully",
             "user_id": created.id,
         }
 
@@ -61,12 +61,12 @@ class UserController(IUserController):
         user = await self._user_repository.get_by_email(user_data.email)
 
         if user is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_data.email} not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail=f"User with {user_data.email} not found")
 
         password_check = self._hash_service.verify_password(user_data.password, user.password)
 
         if not password_check:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect credentials")
+            raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect credentials")
 
         payload = {
             "user_id": user.id,
@@ -79,28 +79,45 @@ class UserController(IUserController):
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
 
         return {
-            "details": "Logged in successfully",
+            "detail": "Logged in successfully",
         }
 
     async def get_profile(self, user_id: int) -> Dict:
         user = await self._user_repository.get_by_id(user_id)
 
         if user is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with {user_id} id not found")
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail=f"User with {user_id} id not found")
 
         if user.role == UserRoles.ADMIN:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Access denied")
+            raise HTTPException(status_code=s.HTTP_403_FORBIDDEN, detail=f"Access denied")
 
         user.password = None
 
         return user.to_payload(exclude_none=True)
+
+    async def change_password(self, user_data: UserDTO, code: str) -> Dict:
+        user = await self._user_repository.get_by_email(user_data.email)
+        if user is None:
+            raise HTTPException(status_code=s.HTTP_404_NOT_FOUND, detail=f"User with email {user_data.email} not found")
+
+        await self._email_otp_service.verify_otp(user_data.email, code)
+
+        user_data.password = self._hash_service.hash_password(user_data.new_password)
+        user_data.new_password = None
+
+        await self._user_repository.update(user_id=user.id, user_data=user_data.to_payload(exclude_none=True))
+
+        return {
+            "detail": "Password changed successfully",
+        }
+
 
     async def update(self, user: UserDTO, user_data: UserDTO) -> Dict:
         if user_data.new_password:
             check_password = self._hash_service.verify_password(user_data.password or "", user.password)
 
             if not check_password:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect password")
+                raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect password")
 
             user_data.password = self._hash_service.hash_password(user_data.new_password)
             user_data.new_password = None
@@ -112,7 +129,7 @@ class UserController(IUserController):
 
         if user_data.avatar_file:
             if user_data.avatar_file.content_type not in ALLOWED_IMAGE_TYPES:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
+                raise HTTPException(status_code=s.HTTP_400_BAD_REQUEST, detail=f"Incorrect image type")
 
             ava_url = await self._storage_service.upload_file(user_data.avatar_file, 'avatars')
             user_data.avatar_url = ava_url
@@ -138,7 +155,7 @@ class UserController(IUserController):
         await self._user_repository.delete(user_id)
 
         return {
-            "details": "User deleted successfully",
+            "detail": "User deleted successfully",
         }
 
     async def refresh_token(self, refresh_token: str, response: Response) -> Dict:
